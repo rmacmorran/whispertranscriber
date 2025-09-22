@@ -311,8 +311,8 @@ for ($i = 0; $i -lt $allFiles.Count; $i++) {
                 $failed++
             }
         } else {
-            # Decode Windows error codes
-            $hexCode = "0x{0:X8}" -f [uint32]$LASTEXITCODE
+            # Decode Windows error codes (handle negative values)
+            $hexCode = "0x{0:X8}" -f ([uint32]($LASTEXITCODE -band 0xFFFFFFFF))
             $errorType = switch ($LASTEXITCODE) {
                 -1073740791 { "Application crash (stack buffer overrun)" }
                 -1073741819 { "Access violation" }
