@@ -538,7 +538,7 @@ class TranscriberApp:
             # Main display loop
             if self.suppress_gui:
                 # Console mode - simple text output
-                print("✅ Transcription started! Press Ctrl+C to stop.")
+                print("Transcription started! Press Ctrl+C to stop.")
                 print(f"Model: {self.config['whisper']['model_size']}, Device: {self.whisper_engine.device}")
                 if self.output_file:
                     print(f"Writing to: {self.output_file}")
@@ -564,7 +564,7 @@ class TranscriberApp:
         except Exception as e:
             logger.error(f"Application error: {e}")
             if self.suppress_gui:
-                print(f"❌ Application error: {e}")
+                print(f"Application error: {e}")
             else:
                 console.print(f"[red]❌ Application error: {e}[/red]")
         finally:
@@ -794,7 +794,7 @@ class TranscriberApp:
             if not self.suppress_gui:
                 console.print(f"[red]❌ File transcription failed: {e}[/red]")
             else:
-                print(f"❌ File transcription failed: {e}")
+                print(f"File transcription failed: {e}")
             raise
     
     def shutdown(self):
