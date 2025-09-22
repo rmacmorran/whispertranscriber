@@ -71,7 +71,7 @@ pip install pyyaml rich pynvml
 
 Either clone this repository or create the files manually:
 
-- `main.py` - Main application
+- `whisper-transcriber.py` - Main application
 - `config.yaml` - Configuration file  
 - `whisper_engine.py` - Whisper transcription engine
 - `vad_chunker.py` - VAD-based audio chunker
@@ -96,7 +96,7 @@ python test_audio_buffer.py
 
 ```powershell
 # List audio devices to find your device ID
-python main.py --list-devices
+python whisper-transcriber.py --list-devices
 
 # Edit config.yaml to set your audio device
 # For VB-Audio Virtual Cable, typically device_index: 31
@@ -108,19 +108,19 @@ python main.py --list-devices
 
 ```powershell
 # Run with default settings (uses config.yaml)
-python main.py
+python whisper-transcriber.py
 
 # List available audio devices
-python main.py --list-devices
+python whisper-transcriber.py --list-devices
 
 # Use specific audio device (e.g., VB-Audio Virtual Cable)
-python main.py --device 31
+python whisper-transcriber.py --device 31
 
 # Use different model size
-python main.py --model small
+python whisper-transcriber.py --model small
 
 # Specify language (or auto-detect)
-python main.py --language en
+python whisper-transcriber.py --language en
 ```
 
 ### Configuration
@@ -151,7 +151,7 @@ whisper:
    - Route specific applications to Virtual Cable
 3. **Run transcriber:**
    ```powershell
-   python main.py --device 31  # Use WASAPI device ID
+   python whisper-transcriber.py --device 31  # Use WASAPI device ID
    ```
 
 ## 📊 Interface
@@ -178,7 +178,7 @@ The application provides a rich real-time interface with three sections:
 ## 🎛️ Command Line Options
 
 ```
-python main.py [options]
+python whisper-transcriber.py [options]
 
 Options:
   -h, --help           Show help message
@@ -211,7 +211,7 @@ Options:
 
 ### Audio Devices
 
-Use `python main.py --list-devices` to see available devices:
+Use `python whisper-transcriber.py --list-devices` to see available devices:
 - **VB-Audio Virtual Cable** (recommended for app audio)
 - **Microphones** (for live speech)
 - **Realtek/USB Audio** (for hardware inputs)
@@ -251,7 +251,7 @@ python test_vad_chunker.py   # Test VAD chunking (Ctrl+C to skip live test)
 
 ```
 whisper-transcriber/
-├── main.py              # Main application
+├── whisper-transcriber.py  # Main application
 ├── config.yaml          # Configuration file
 ├── whisper_engine.py    # Whisper transcription engine
 ├── vad_chunker.py       # VAD-based audio chunker
@@ -299,7 +299,7 @@ vad:
 ### Transcribe YouTube Videos
 1. Play YouTube video
 2. Set VB-Audio Virtual Cable as Windows default audio output
-3. Run: `python main.py --device 31`
+3. Run: `python whisper-transcriber.py --device 31`
 
 ### Transcribe Zoom/Teams Calls  
 1. Configure Zoom/Teams to output to VB-Audio Virtual Cable
@@ -309,7 +309,89 @@ vad:
 ### Voice Recording
 ```powershell
 # Use microphone directly
-python main.py --device 1  # Replace with your mic device ID
+python whisper-transcriber.py --device 1  # Replace with your mic device ID
+```
+
+## 🔄 Batch Processing with PowerShell Script
+
+Included with the project is `batch-transcribe.ps1`, a powerful PowerShell script that can transcribe multiple video/audio files in bulk.
+
+### Features
+- **📁 Bulk processing** - transcribes all video/audio files in a directory
+- **⚙️ Flexible options** - timestamps, model size, output directory
+- **📊 Progress tracking** - shows progress and timing for each file
+- **🎯 Smart skipping** - avoids re-transcribing existing files (unless `-Force`)
+- **🌈 Color output** - easy-to-read progress indicators
+- **📂 Works anywhere** - automatically finds whisper-transcriber.py
+
+### Basic Usage
+```powershell
+# Transcribe all media files in current directory
+.\batch-transcribe.ps1
+
+# Include timestamps in transcripts
+.\batch-transcribe.ps1 -Timestamps
+
+# Use larger model for better accuracy
+.\batch-transcribe.ps1 -Model large -Timestamps
+
+# Custom output directory
+.\batch-transcribe.ps1 -OutputDir "my_transcripts" -Force
+```
+
+### Running from Any Directory
+The batch script can run from any directory - it will automatically find your whisper-transcriber installation:
+
+```powershell
+# Option 1: Copy script to media folder
+copy "C:\path\to\whisper-transcriber\batch-transcribe.ps1" .
+.\batch-transcribe.ps1 -Timestamps -Model large
+
+# Option 2: Set environment variable (recommended)
+$env:WHISPER_TRANSCRIBER_PATH = "C:\path\to\whisper-transcriber\whisper-transcriber.py"
+C:\any\folder\batch-transcribe.ps1 -Timestamps
+
+# Option 3: Run with full path
+C:\path\to\whisper-transcriber\batch-transcribe.ps1 -Timestamps
+```
+
+### Supported Formats
+**Video:** .mp4, .avi, .mkv, .mov, .wmv, .flv, .webm, .m4v  
+**Audio:** .mp3, .wav, .flac, .aac, .ogg, .m4a, .wma
+
+### Batch Script Options
+```powershell
+.\batch-transcribe.ps1 [OPTIONS]
+
+Options:
+  -OutputDir <path>   Output directory (default: 'transcripts')
+  -Timestamps         Include timestamps in output
+  -Model <size>       Whisper model (tiny/base/small/medium/large)
+  -Force              Overwrite existing transcripts
+  -Help               Show help message
+```
+
+### Example Output
+```
+Using transcriber script: C:\whisper-transcriber\whisper-transcriber.py
+Scanning for video and audio files...
+Found 3 files to process:
+   lecture1.mp4 (45.2 MB)
+   interview.wav (12.8 MB)  
+   presentation.m4v (89.1 MB)
+
+Starting batch transcription...
+Model: large
+Timestamps: Yes
+Output: transcripts\
+
+[1/3] (0%) Processing: lecture1.mp4
+   Transcribing...
+   Success! Transcript saved (2.1 KB) - took 02:15
+
+[2/3] (33.3%) Processing: interview.wav
+   Transcribing...
+   Success! Transcript saved (892 bytes) - took 00:45
 ```
 
 ## 📄 License

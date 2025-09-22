@@ -15,8 +15,11 @@ from pathlib import Path
 from typing import Optional, Dict
 import yaml
 import pynvml
+import librosa
+import soundfile as sf
 
 from rich.console import Console
+import os
 from rich.live import Live
 from rich.panel import Panel
 from rich.text import Text
@@ -47,6 +50,11 @@ class TranscriberApp:
             suppress_gui: Whether to suppress the GUI and run in console mode
         """
         self.config_path = config_path
+        
+        # Output configuration (set before load_config to avoid AttributeError)
+        self.output_file = output_file
+        self.suppress_gui = suppress_gui
+        
         self.config = self.load_config()
         
         # Components
@@ -59,10 +67,6 @@ class TranscriberApp:
         self.start_time = None
         self.shutdown_event = threading.Event()
         self.transcription_thread = None
-        
-        # Output configuration
-        self.output_file = output_file
-        self.suppress_gui = suppress_gui
         self.output_file_handle = None
         self.transcript_lines = []  # Store transcription lines for display
         self.max_transcript_lines = 50  # Maximum lines to keep in memory
@@ -148,12 +152,31 @@ class TranscriberApp:
                             base[key] = value
                 
                 merge_dict(default_config, loaded_config)
-                console.print(f"[green]✅ Configuration loaded from {config_file}[/green]")
+                # Use safe console output that avoids Unicode issues
+                if self.suppress_gui:
+                    print(f"Configuration loaded from {config_file}")
+                else:
+                    try:
+                        console.print(f"[green]✅ Configuration loaded from {config_file}[/green]")
+                    except UnicodeEncodeError:
+                        print(f"Configuration loaded from {config_file}")
                 
             except Exception as e:
-                console.print(f"[yellow]⚠️  Failed to load config: {e}. Using defaults.[/yellow]")
+                if self.suppress_gui:
+                    print(f"Failed to load config: {e}. Using defaults.")
+                else:
+                    try:
+                        console.print(f"[yellow]⚠️  Failed to load config: {e}. Using defaults.[/yellow]")
+                    except UnicodeEncodeError:
+                        print(f"Failed to load config: {e}. Using defaults.")
         else:
-            console.print(f"[yellow]⚠️  Config file {config_file} not found. Using defaults.[/yellow]")
+            if self.suppress_gui:
+                print(f"Config file {config_file} not found. Using defaults.")
+            else:
+                try:
+                    console.print(f"[yellow]⚠️  Config file {config_file} not found. Using defaults.[/yellow]")
+                except UnicodeEncodeError:
+                    print(f"Config file {config_file} not found. Using defaults.")
         
         return default_config
     
@@ -530,6 +553,155 @@ class TranscriberApp:
         finally:
             self.shutdown()
     
+    def transcribe_file(self, input_file: str, include_timestamps: bool = False) -> str:
+        """
+        Transcribe an audio or video file and return the full transcript
+        
+        Args:
+            input_file: Path to the input audio/video file
+            include_timestamps: Whether to include timestamps in the output
+            
+        Returns:
+            Full transcript text
+        """
+        logger = logging.getLogger(__name__)
+        
+        try:
+            # Validate input file
+            input_path = Path(input_file)
+            if not input_path.exists():
+                raise FileNotFoundError(f"Input file not found: {input_file}")
+            
+            # Load audio file using librosa (handles many formats including video)
+            if not self.suppress_gui:
+                console.print(f"[yellow]Loading audio from: {input_file}[/yellow]")
+            else:
+                print(f"Loading audio from: {input_file}")
+            
+            # Try to load audio and resample to 16kHz for Whisper
+            try:
+                audio, sr = librosa.load(input_file, sr=16000, mono=True)
+                duration = len(audio) / sr
+            except Exception as e:
+                # If librosa fails (e.g., missing ffmpeg for video files), provide helpful error
+                error_msg = f"Failed to load audio from file. "
+                if str(e).lower().find('ffmpeg') != -1 or input_file.lower().endswith(('.mp4', '.avi', '.mkv', '.mov')):
+                    error_msg += "For video files, you need ffmpeg installed. "
+                    error_msg += "Install it from https://ffmpeg.org/ or use 'winget install ffmpeg' on Windows."
+                else:
+                    error_msg += f"Error: {e}"
+                raise Exception(error_msg)
+            
+            if not self.suppress_gui:
+                console.print(f"[green]✅ Audio loaded: {duration:.1f}s duration[/green]")
+            else:
+                print(f"Audio loaded: {duration:.1f}s duration")
+            
+            # Initialize only Whisper engine for file transcription
+            self.whisper_engine = WhisperEngine(
+                model_size=self.config['whisper']['model_size'],
+                device=self.config['whisper']['device'],
+                compute_type=self.config['whisper']['compute_type'],
+                num_workers=1,  # Use single worker for file processing
+                beam_size=self.config['whisper']['beam_size'],
+                language=self.config['whisper']['language'],
+                word_timestamps=self.config['whisper']['word_timestamps']
+            )
+            
+            # Start Whisper engine
+            self.whisper_engine.start()
+            
+            # Process file in chunks to handle large files
+            chunk_duration = 30.0  # Process 30-second chunks
+            chunk_samples = int(chunk_duration * sr)
+            total_chunks = int(np.ceil(len(audio) / chunk_samples))
+            
+            if not self.suppress_gui:
+                console.print(f"[yellow]Processing {total_chunks} chunks...[/yellow]")
+            else:
+                print(f"Processing {total_chunks} chunks...")
+            
+            transcript_parts = []
+            
+            for i in range(total_chunks):
+                start_idx = i * chunk_samples
+                end_idx = min((i + 1) * chunk_samples, len(audio))
+                chunk_audio = audio[start_idx:end_idx]
+                
+                # Convert to int16 format expected by AudioChunk
+                chunk_audio_int16 = (chunk_audio * 32767).astype(np.int16)
+                
+                # Create AudioChunk
+                from vad_chunker import AudioChunk
+                chunk = AudioChunk(
+                    audio_data=chunk_audio_int16,
+                    start_time=start_idx / sr,
+                    end_time=end_idx / sr,
+                    duration=(end_idx - start_idx) / sr,
+                    contains_speech=True,  # Assume all chunks contain speech for file mode
+                    chunk_id=i,
+                    sample_rate=16000
+                )
+                
+                # Submit chunk and wait for result
+                success = self.whisper_engine.submit_chunk(chunk)
+                if success:
+                    # Wait for transcription result
+                    result = None
+                    timeout_start = time.time()
+                    while result is None and (time.time() - timeout_start) < 30.0:
+                        result = self.whisper_engine.get_result(timeout=1.0)
+                    
+                    if result and result.text.strip():
+                        # Format with or without timestamps based on parameter
+                        if include_timestamps:
+                            # Format timestamp from chunk start time
+                            start_seconds = int(chunk.start_time)
+                            start_minutes = start_seconds // 60
+                            start_hours = start_minutes // 60
+                            start_seconds = start_seconds % 60
+                            start_minutes = start_minutes % 60
+                            
+                            timestamp_str = f"[{start_hours:02d}:{start_minutes:02d}:{start_seconds:02d}] "
+                            formatted_text = timestamp_str + result.text.strip()
+                        else:
+                            formatted_text = result.text.strip()
+                        
+                        transcript_parts.append(formatted_text)
+                        
+                        # Show progress
+                        progress_msg = f"Chunk {i+1}/{total_chunks}: {result.text.strip()[:50]}..."
+                        if not self.suppress_gui:
+                            console.print(f"[cyan]{progress_msg}[/cyan]")
+                        else:
+                            print(progress_msg)
+            
+            # Stop Whisper engine
+            self.whisper_engine.stop()
+            
+            # Combine all transcript parts
+            if include_timestamps:
+                # For timestamps, join with single newlines (each chunk is already formatted as one line)
+                full_transcript = '\n'.join(transcript_parts)
+            else:
+                # For no timestamps, join with single space as before
+                full_transcript = ' '.join(transcript_parts)
+            
+            if not self.suppress_gui:
+                console.print(f"[green]✅ File transcription completed![/green]")
+            else:
+                print("File transcription completed!")
+            
+            return full_transcript
+            
+        except Exception as e:
+            logger.error(f"File transcription error: {e}")
+            if not self.suppress_gui:
+                console.print(f"[red]❌ File transcription failed: {e}[/red]")
+            else:
+                print(f"❌ File transcription failed: {e}")
+            raise
+    
     def shutdown(self):
         """
         Clean shutdown of all components
@@ -577,13 +749,23 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
+  # Real-time transcription (default mode)
   python main.py                              # Run with default settings (GUI mode)
   python main.py --list-devices               # Show available audio devices
   python main.py --device 31                  # Use specific audio device
   python main.py --model small                # Use small model for better accuracy
   python main.py --output transcript.txt      # Save transcription to file
   python main.py --no-gui                     # Run in console mode without GUI
-  python main.py -d 31 -o output.txt --no-gui # Console mode with device and output file
+  python main.py -q                           # Run in console mode (short form)
+  python main.py -d 31 -o output.txt -q       # Console mode with device and output file
+  
+  # File transcription mode
+  python main.py -i audio.mp3                 # Transcribe audio file to console
+  python main.py -i video.mp4 -o transcript.txt # Transcribe video file to text file
+  python main.py -i recording.wav -q          # Transcribe in console mode
+  python main.py -i audio.m4a -m small --language en # Use small model with English language
+  python main.py -i video.mp4 -t -o transcript.txt # Include timestamps in output
+  python main.py -i video.mp4 -tq             # Transcribe with timestamps, console mode
         """
     )
     
@@ -609,9 +791,17 @@ Examples:
     parser.add_argument('--output', '-o',
                        help='Output file path for saving transcriptions')
     
-    parser.add_argument('--no-gui', '--suppress-gui',
+    parser.add_argument('--no-gui', '--suppress-gui', '-q',
                        action='store_true',
                        help='Suppress GUI and run in console mode')
+    
+    parser.add_argument('--input-file', '-i',
+                       type=str,
+                       help='Input audio/video file to transcribe (non-real-time mode)')
+    
+    parser.add_argument('--timestamps', '-t',
+                       action='store_true',
+                       help='Include timestamps in file transcription output')
     
     args = parser.parse_args()
     
@@ -638,11 +828,57 @@ Examples:
         if args.language:
             app.config['whisper']['language'] = args.language if args.language != 'auto' else None
         
-        # Run the application
-        app.run()
+        # Check if we're in file transcription mode
+        if args.input_file:
+            # File transcription mode
+            try:
+                transcript = app.transcribe_file(args.input_file, include_timestamps=args.timestamps)
+                
+                # Output the transcript
+                if args.output:
+                    # Write to output file
+                    output_path = Path(args.output)
+                    output_path.parent.mkdir(parents=True, exist_ok=True)
+                    
+                    with open(args.output, 'w', encoding='utf-8') as f:
+                        f.write(transcript)
+                    
+                    if args.no_gui:
+                        print(f"\nTranscript saved to: {args.output}")
+                    else:
+                        try:
+                            console.print(f"\n[green]✅ Transcript saved to: {args.output}[/green]")
+                        except UnicodeEncodeError:
+                            print(f"\nTranscript saved to: {args.output}")
+                else:
+                    # Output to console
+                    if args.no_gui:
+                        print("\n--- TRANSCRIPT ---")
+                        print(transcript)
+                        print("--- END TRANSCRIPT ---")
+                    else:
+                        console.print("\n[bold green]--- TRANSCRIPT ---[/bold green]")
+                        console.print(transcript)
+                        console.print("[bold green]--- END TRANSCRIPT ---[/bold green]")
+                
+            except Exception as e:
+                if args.no_gui:
+                    print(f"File transcription failed: {e}")
+                else:
+                    try:
+                        console.print(f"[red]❌ File transcription failed: {e}[/red]")
+                    except UnicodeEncodeError:
+                        print(f"File transcription failed: {e}")
+                sys.exit(1)
+        else:
+            # Real-time transcription mode
+            app.run()
         
     except Exception as e:
-        console.print(f"[red]❌ Failed to start application: {e}[/red]")
+        try:
+            console.print(f"[red]❌ Failed to start application: {e}[/red]")
+        except UnicodeEncodeError:
+            print(f"Failed to start application: {e}")
         sys.exit(1)
 
 
