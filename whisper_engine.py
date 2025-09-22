@@ -59,7 +59,14 @@ class WhisperEngine:
         """
         self.model_size = model_size
         self.device = device if device != "auto" else ("cuda" if torch.cuda.is_available() else "cpu")
-        self.compute_type = compute_type
+        
+        # Automatically adjust compute_type for CPU compatibility
+        if self.device == "cpu" and compute_type == "float16":
+            self.compute_type = "float32"  # CPU doesn't support efficient float16
+            logger.warning(f"Adjusted compute_type from float16 to float32 for CPU compatibility")
+        else:
+            self.compute_type = compute_type
+            
         self.num_workers = num_workers
         self.beam_size = beam_size
         self.language = language

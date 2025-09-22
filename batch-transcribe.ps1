@@ -231,11 +231,22 @@ except Exception as e:
 $baseArgs = @('-q')  # Quiet mode
 if ($Timestamps) { $baseArgs += '-t' }
 if ($Model -ne 'base') { $baseArgs += @('-m', $Model) }
-# Add config file path if found
+
+# Add config file path with smart CPU detection
 if ($CpuOnly -and (Test-Path 'config-cpu.yaml')) {
     $baseArgs += @('-c', 'config-cpu.yaml')
     Write-ColorOutput "Using CPU-only config file: config-cpu.yaml" 'Warning'
 } elseif ($configPath -and (Test-Path $configPath)) {
+    # Check if we need to override config for CPU processing
+    try {
+        $gpuAvailable = & python -c "import torch; print('GPU' if torch.cuda.is_available() else 'CPU')" 2>$null
+        if ($gpuAvailable -eq 'CPU') {
+            Write-ColorOutput "GPU not available - consider using -CpuOnly flag for optimal performance" 'Warning'
+        }
+    } catch {
+        # Ignore GPU detection errors
+    }
+    
     $baseArgs += @('-c', $configPath)
     Write-ColorOutput "Using config file: $configPath" 'Info'
 } else {
