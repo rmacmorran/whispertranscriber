@@ -1,0 +1,63 @@
+# Whisper Real-time Transcriber Configuration
+
+# Audio settings
+audio:
+  # Audio device index (-1 for system default, use --list-devices to see available)
+  # 31 = VB-Audio Virtual Cable (WASAPI) - for routing app audio
+  device_index: 31
+  # Sample rate (48000 matches VB-Audio WASAPI, will be resampled internally)
+  sample_rate: 48000
+  # Buffer size in milliseconds for audio capture
+  buffer_size_ms: 20
+  # Maximum ring buffer duration in seconds
+  max_buffer_duration: 30
+
+# Voice Activity Detection settings  
+vad:
+  # Threshold for detecting speech (0.1 to 1.0, higher = more sensitive)
+  threshold: 0.5
+  # Minimum silence duration in ms to end a chunk
+  min_silence_ms: 300
+  # Minimum chunk duration in seconds
+  min_chunk_duration: 2.0
+  # Maximum chunk duration in seconds  
+  max_chunk_duration: 12.0
+  # Overlap between chunks in seconds to prevent word clipping
+  chunk_overlap: 0.5
+
+# Whisper model settings
+whisper:
+  # Model size: tiny, base, small, medium, large, large-v2, large-v3
+  model_size: "base"
+  # Device: "cuda", "cpu", or "auto"
+  device: "auto"
+  # Compute type: "float16", "float32", "int8" (float16 recommended for GPU)
+  compute_type: "float16"
+  # Beam search size (1-5, higher = more accurate but slower)
+  beam_size: 1
+  # Language (auto-detect if null, or specify like "en", "es", etc.)
+  language: null
+  # Enable timestamps in output
+  word_timestamps: true
+
+# Output settings
+output:
+  # Show real-time transcription in console
+  console_output: true
+  # File outputs (can be multiple: txt, json, srt, vtt)
+  file_formats: []
+  # Output directory for files
+  output_dir: "./transcripts"
+  # Include confidence scores in output
+  include_confidence: true
+
+# Performance settings
+performance:
+  # Number of worker threads for Whisper processing
+  num_workers: 2
+  # Enable GPU monitoring
+  monitor_gpu: true
+  # Log level: DEBUG, INFO, WARNING, ERROR
+  log_level: "INFO"
+  # Maximum log file size in MB
+  max_log_size: 10

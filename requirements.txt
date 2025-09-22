@@ -1,0 +1,19 @@
+# PyTorch with CUDA support (install manually with index URL)
+# pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+# Core transcription dependencies
+faster-whisper>=1.0.0
+silero-vad>=5.0.0
+
+# Audio processing
+sounddevice>=0.4.6
+scipy>=1.11.0
+
+# Configuration and utilities
+pyyaml>=6.0.0
+rich>=13.0.0
+
+# GPU monitoring (deprecated, but still working)
+pynvml>=11.4.0
+
+# Note: Consider replacing pynvml with nvidia-ml-py in future updates
