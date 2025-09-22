@@ -33,9 +33,14 @@ With a modern NVIDIA GPU (RTX 2070+), expect:
 ### Step 1: Setup Project Directory
 
 ```powershell
-# Create project directory
-mkdir whisper-transcriber
+# Option 1: Clone directly (recommended)
+git clone https://github.com/rmacmorran/whispertranscriber.git whisper-transcriber
 cd whisper-transcriber
+
+# Option 2: Create empty directory first, then clone
+# mkdir whisper-transcriber
+# cd whisper-transcriber
+# git clone https://github.com/rmacmorran/whispertranscriber.git .
 ```
 
 ### Step 2: Create Virtual Environment
@@ -67,29 +72,7 @@ pip install sounddevice scipy
 pip install pyyaml rich pynvml
 ```
 
-### Step 4: Download/Create Project Files
-
-Either clone this repository or create the files manually:
-
-```powershell
-# Clone the repository (recommended)
-git clone https://github.com/rmacmorran/whispertranscriber.git .
-
-# Alternative: Download as ZIP file without git
-# Go to https://github.com/rmacmorran/whispertranscriber
-# Click "Code" -> "Download ZIP" -> Extract to whisper-transcriber folder
-```
-
-Required files:
-- `whisper-transcriber.py` - Main application
-- `config.yaml` - Configuration file  
-- `whisper_engine.py` - Whisper transcription engine
-- `vad_chunker.py` - VAD-based audio chunker
-- `audio_buffer.py` - Audio capture buffer
-- `audio_devices.py` - Device utilities
-- Test files: `test_whisper.py`, `test_audio_buffer.py`, etc.
-
-### Step 5: Test Installation
+### Step 4: Test Installation
 
 ```powershell
 # Test GPU acceleration
@@ -102,7 +85,7 @@ python audio_devices.py
 python test_audio_buffer.py
 ```
 
-### Step 6: Configure for Your System
+### Step 5: Configure for Your System
 
 ```powershell
 # List audio devices to find your device ID
