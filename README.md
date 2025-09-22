@@ -62,15 +62,11 @@ python -m pip install --upgrade pip
 # Install PyTorch with CUDA support (for NVIDIA GPUs)
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 
-# Install Whisper and VAD components
-pip install faster-whisper silero-vad
-
-# Install audio processing libraries
-pip install sounddevice scipy
-
-# Install utility libraries
-pip install pyyaml rich pynvml
+# Install all other dependencies from requirements.txt
+pip install -r requirements.txt
 ```
+
+> **Note:** PyTorch requires a special index URL for CUDA support, so it's installed separately. All other dependencies are managed through `requirements.txt` for consistency.
 
 ### Step 4: Test Installation
 
