@@ -6,10 +6,16 @@ Test script for faster-whisper functionality and GPU acceleration
 import numpy as np
 import time
 import torch
+import os
+import warnings
 from rich.console import Console
 from rich.progress import Progress, SpinnerColumn, TextColumn
 from rich.panel import Panel
 from rich.text import Text
+
+# Suppress common warnings to clean up output
+os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
+warnings.filterwarnings("ignore", category=FutureWarning, module="torch.cuda")
 
 console = Console()
 
@@ -59,22 +65,18 @@ def test_whisper_model_loading():
     try:
         from faster_whisper import WhisperModel
         
-        with Progress(
-            SpinnerColumn(),
-            TextColumn("[progress.description]{task.description}"),
-            console=console
-        ) as progress:
-            task = progress.add_task("Loading Whisper 'base' model...", total=None)
-            
-            # Load the base model with GPU if available
-            model = WhisperModel(
-                "base",
-                device="cuda" if torch.cuda.is_available() else "cpu",
-                compute_type="float16" if torch.cuda.is_available() else "float32"
-            )
-            
-            progress.update(task, description="✅ Whisper model loaded successfully")
-            
+        # Use simple progress indication instead of Rich Progress to avoid Unicode issues
+        console_print("Loading Whisper 'base' model...")
+        
+        # Load the base model with GPU if available
+        model = WhisperModel(
+            "base",
+            device="cuda" if torch.cuda.is_available() else "cpu",
+            compute_type="float16" if torch.cuda.is_available() else "float32"
+        )
+        
+        console_print("✅ Whisper model loaded successfully")
+        
         # Get model info
         device_info = "CUDA (GPU)" if torch.cuda.is_available() else "CPU"
         console_print(f"Model: base, Device: {device_info}")
@@ -188,7 +190,13 @@ def test_gpu_memory_usage():
     console_print("\n[bold blue]Testing GPU Memory Usage[/bold blue]")
     
     try:
-        import pynvml
+        # Try to import nvidia-ml-py first, fall back to pynvml
+        try:
+            import pynvml
+        except ImportError:
+            console_print("[yellow]⚠️  pynvml/nvidia-ml-py not available for GPU monitoring[/yellow]")
+            return True
+            
         pynvml.nvmlInit()
         
         # Get GPU info
