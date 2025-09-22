@@ -6,6 +6,7 @@ param(
     [switch]$Timestamps,
     [string]$Model = "base",
     [switch]$Force,
+    [switch]$ContinueOnError,
     [switch]$Help
 )
 
@@ -22,6 +23,7 @@ OPTIONS:
     -Timestamps         Include timestamps in transcripts
     -Model <size>       Whisper model size (tiny/base/small/medium/large, default: 'base')
     -Force              Overwrite existing transcript files
+    -ContinueOnError    Continue processing other files if one fails
     -Help               Show this help message
 
 EXAMPLES:

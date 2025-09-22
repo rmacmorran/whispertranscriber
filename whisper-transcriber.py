@@ -579,18 +579,96 @@ class TranscriberApp:
                 print(f"Loading audio from: {input_file}")
             
             # Try to load audio and resample to 16kHz for Whisper
+            # Use multiple fallback methods for better compatibility
+            audio = None
+            sr = None
+            duration = 0
+            
+            # Method 1: Try librosa with soundfile backend (preferred)
             try:
+                import soundfile as sf
+                import numpy as np
                 audio, sr = librosa.load(input_file, sr=16000, mono=True)
                 duration = len(audio) / sr
-            except Exception as e:
-                # If librosa fails (e.g., missing ffmpeg for video files), provide helpful error
-                error_msg = f"Failed to load audio from file. "
-                if str(e).lower().find('ffmpeg') != -1 or input_file.lower().endswith(('.mp4', '.avi', '.mkv', '.mov')):
-                    error_msg += "For video files, you need ffmpeg installed. "
-                    error_msg += "Install it from https://ffmpeg.org/ or use 'winget install ffmpeg' on Windows."
+                if not self.suppress_gui:
+                    console.print(f"[green]✅ Loaded with librosa+soundfile backend[/green]")
                 else:
-                    error_msg += f"Error: {e}"
-                raise Exception(error_msg)
+                    print("Loaded with librosa+soundfile backend")
+            except Exception as e1:
+                if not self.suppress_gui:
+                    console.print(f"[yellow]⚠️ Librosa+soundfile failed: {str(e1)[:100]}...[/yellow]")
+                else:
+                    print(f"Librosa+soundfile failed: {str(e1)[:100]}...")
+                
+                # Method 2: Try librosa with audioread backend
+                try:
+                    import warnings
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore")
+                        audio, sr = librosa.load(input_file, sr=16000, mono=True)
+                        duration = len(audio) / sr
+                    if not self.suppress_gui:
+                        console.print(f"[green]✅ Loaded with librosa+audioread backend[/green]")
+                    else:
+                        print("Loaded with librosa+audioread backend")
+                except Exception as e2:
+                    if not self.suppress_gui:
+                        console.print(f"[yellow]⚠️ Librosa+audioread failed: {str(e2)[:100]}...[/yellow]")
+                    else:
+                        print(f"Librosa+audioread failed: {str(e2)[:100]}...")
+                    
+                    # Method 3: Try direct soundfile loading
+                    try:
+                        import soundfile as sf
+                        import numpy as np
+                        from scipy import signal
+                        
+                        audio_data, original_sr = sf.read(input_file, always_2d=False)
+                        if len(audio_data.shape) > 1:  # Convert stereo to mono
+                            audio_data = np.mean(audio_data, axis=1)
+                        
+                        # Resample to 16kHz if needed
+                        if original_sr != 16000:
+                            from scipy.signal import resample
+                            num_samples = int(len(audio_data) * 16000 / original_sr)
+                            audio = resample(audio_data, num_samples).astype(np.float32)
+                        else:
+                            audio = audio_data.astype(np.float32)
+                        
+                        sr = 16000
+                        duration = len(audio) / sr
+                        if not self.suppress_gui:
+                            console.print(f"[green]✅ Loaded with direct soundfile[/green]")
+                        else:
+                            print("Loaded with direct soundfile")
+                    except Exception as e3:
+                        # All methods failed - provide comprehensive error message
+                        error_msg = f"Failed to load audio from file using all available methods:\n"
+                        error_msg += f"  1. Librosa+SoundFile: {str(e1)[:100]}...\n"
+                        error_msg += f"  2. Librosa+AudioRead: {str(e2)[:100]}...\n"
+                        error_msg += f"  3. Direct SoundFile: {str(e3)[:100]}...\n\n"
+                        
+                        file_ext = input_file.lower().split('.')[-1]
+                        if file_ext in ['mp4', 'avi', 'mkv', 'mov', 'wmv', 'flv', 'webm', 'm4v']:
+                            error_msg += "This is a video file. Possible solutions:\n"
+                            error_msg += "  • Install/update FFmpeg: winget install ffmpeg\n"
+                            error_msg += "  • Try converting to audio first: ffmpeg -i input.mp4 -acodec pcm_s16le output.wav\n"
+                        else:
+                            error_msg += "This is an audio file. Possible solutions:\n"
+                            error_msg += "  • File may be corrupted - try re-downloading\n"
+                            error_msg += "  • Unsupported codec - try converting: ffmpeg -i input.ext output.wav\n"
+                        
+                        error_msg += "  • Check file exists and is readable\n"
+                        error_msg += f"  • File extension: .{file_ext}\n"
+                        raise Exception(error_msg)
+            
+            # Validate loaded audio
+            if audio is None or len(audio) == 0:
+                raise Exception("Audio file loaded but contains no audio data")
+            
+            # Check for extremely short files
+            if duration < 0.1:
+                raise Exception(f"Audio file is too short ({duration:.3f}s) - minimum 0.1 seconds required")
             
             if not self.suppress_gui:
                 console.print(f"[green]✅ Audio loaded: {duration:.1f}s duration[/green]")
