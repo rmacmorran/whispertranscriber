@@ -1,0 +1,40 @@
+# Whisper Real-time Transcriber Configuration - CPU Only
+# This config avoids potential GPU-related crashes
+
+# Audio settings
+audio:
+  device_index: -1  # Use system default
+  sample_rate: 16000  # Standard for Whisper
+  buffer_size_ms: 20
+  max_buffer_duration: 30
+
+# Voice Activity Detection settings  
+vad:
+  threshold: 0.5
+  min_silence_ms: 300
+  min_chunk_duration: 2.0
+  max_chunk_duration: 12.0
+  chunk_overlap: 0.5
+
+# Whisper model settings - CPU ONLY
+whisper:
+  model_size: "base"
+  device: "cpu"          # Force CPU only
+  compute_type: "float32" # Use float32 for CPU
+  beam_size: 1
+  language: null
+  word_timestamps: true
+
+# Output settings
+output:
+  console_output: true
+  file_formats: []
+  output_dir: "./transcripts"
+  include_confidence: true
+
+# Performance settings - CPU optimized
+performance:
+  num_workers: 1        # Reduce workers for stability
+  monitor_gpu: false    # Disable GPU monitoring
+  log_level: "INFO"
+  max_log_size: 10

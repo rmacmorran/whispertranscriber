@@ -7,6 +7,7 @@ param(
     [string]$Model = "base",
     [switch]$Force,
     [switch]$ContinueOnError,
+    [switch]$CpuOnly,
     [switch]$Help
 )
 
@@ -21,9 +22,10 @@ USAGE:
 OPTIONS:
     -OutputDir <path>   Output directory for transcripts (default: current directory)
     -Timestamps         Include timestamps in transcripts
-    -Model <size>       Whisper model size (tiny/base/small/medium/large, default: 'base')
+    -Model <size>       Whisper model size (tiny/base/small/medium/large/large-v2/large-v3, default: 'base')
     -Force              Overwrite existing transcript files
     -ContinueOnError    Continue processing other files if one fails
+    -CpuOnly            Force CPU-only processing (avoids GPU-related crashes)
     -Help               Show this help message
 
 EXAMPLES:
@@ -31,6 +33,7 @@ EXAMPLES:
     .\batch-transcribe.ps1 -Timestamps                       # With timestamps
     .\batch-transcribe.ps1 -OutputDir "my_transcripts"       # Custom output folder
     .\batch-transcribe.ps1 -Model small -Timestamps -Force   # Advanced options
+    .\batch-transcribe.ps1 -CpuOnly                          # Force CPU processing (if GPU crashes)
 
 SUPPORTED FORMATS:
     Video: .mp4, .avi, .mkv, .mov, .wmv, .flv, .webm, .m4v
@@ -38,6 +41,59 @@ SUPPORTED FORMATS:
 "@
     exit 0
 }
+
+# Validate command-line parameters
+# Valid Whisper model sizes
+$validModels = @('tiny', 'base', 'small', 'medium', 'large', 'large-v2', 'large-v3')
+
+# Function to validate parameters
+function Test-Parameters {
+    $errors = @()
+    
+    # Validate Model parameter
+    if ($Model -and $Model -notin $validModels) {
+        $errors += "Invalid model size: '$Model'. Valid options are: $($validModels -join ', ')"
+    }
+    
+    # Validate OutputDir parameter
+    if ($OutputDir) {
+        try {
+            # Test if we can resolve/create the path
+            $resolvedPath = $null
+            if (Test-Path $OutputDir) {
+                $resolvedPath = Resolve-Path $OutputDir -ErrorAction Stop
+            } else {
+                # Try to create parent directories to validate path
+                $parentPath = Split-Path $OutputDir -Parent
+                if ($parentPath -and -not (Test-Path $parentPath)) {
+                    $errors += "Output directory parent path does not exist: '$parentPath'"
+                }
+            }
+        }
+        catch {
+            $errors += "Invalid output directory path: '$OutputDir' - $($_.Exception.Message)"
+        }
+    }
+    
+    return $errors
+}
+
+# Validate parameters before proceeding
+Write-Host "Validating command-line parameters..." -ForegroundColor Cyan
+$validationErrors = Test-Parameters
+
+if ($validationErrors.Count -gt 0) {
+    Write-Host "Parameter validation failed:" -ForegroundColor Red
+    foreach ($error in $validationErrors) {
+        Write-Host "  ❌ $error" -ForegroundColor Red
+    }
+    Write-Host ""
+    Write-Host "Use -Help to see valid options and examples." -ForegroundColor Yellow
+    exit 1
+}
+
+Write-Host "✅ Parameters validated successfully" -ForegroundColor Green
+Write-Host ""
 
 # Supported file extensions
 $videoExtensions = @('.mp4', '.avi', '.mkv', '.mov', '.wmv', '.flv', '.webm', '.m4v')
@@ -142,12 +198,44 @@ $allFiles | ForEach-Object {
 }
 Write-Host ""
 
+# Test Python environment and dependencies before processing
+Write-ColorOutput "Testing Python environment..." 'Info'
+try {
+    $testResult = & python -c @"
+try:
+    import faster_whisper
+    import librosa
+    import soundfile
+    import numpy as np
+    print('DEPS_OK')
+except Exception as e:
+    print(f'DEPS_ERROR: {e}')
+"@ 2>&1
+    
+    if ($testResult -contains 'DEPS_OK') {
+        Write-ColorOutput "✅ Python dependencies validated" 'Success'
+    } else {
+        Write-ColorOutput "❌ Python dependency issues detected:" 'Error'
+        foreach ($line in $testResult) {
+            Write-ColorOutput "   $line" 'Error'
+        }
+        Write-ColorOutput "Please ensure all required packages are installed" 'Warning'
+        exit 1
+    }
+} catch {
+    Write-ColorOutput "❌ Failed to test Python environment: $($_.Exception.Message)" 'Error'
+    exit 1
+}
+
 # Build base command arguments
 $baseArgs = @('-q')  # Quiet mode
 if ($Timestamps) { $baseArgs += '-t' }
 if ($Model -ne 'base') { $baseArgs += @('-m', $Model) }
 # Add config file path if found
-if ($configPath -and (Test-Path $configPath)) {
+if ($CpuOnly -and (Test-Path 'config-cpu.yaml')) {
+    $baseArgs += @('-c', 'config-cpu.yaml')
+    Write-ColorOutput "Using CPU-only config file: config-cpu.yaml" 'Warning'
+} elseif ($configPath -and (Test-Path $configPath)) {
     $baseArgs += @('-c', $configPath)
     Write-ColorOutput "Using config file: $configPath" 'Info'
 } else {
@@ -190,6 +278,10 @@ for ($i = 0; $i -lt $allFiles.Count; $i++) {
     try {
         $fileStartTime = Get-Date
         
+        # Debug: Show the exact command being run
+        $commandString = "python `"$scriptPath`" " + ($fileArgs -join ' ')
+        Write-ColorOutput "   Command: $commandString" 'Info'
+        
         # Run transcription
         Write-ColorOutput "   Transcribing..." 'Info'
         $result = & python $scriptPath @fileArgs 2>&1
@@ -197,6 +289,7 @@ for ($i = 0; $i -lt $allFiles.Count; $i++) {
         $fileEndTime = Get-Date
         $processingTime = $fileEndTime - $fileStartTime
         
+        # More detailed exit code analysis
         if ($LASTEXITCODE -eq 0) {
             if (Test-Path $outputFile) {
                 $transcriptSize = Get-FileSize (Get-Item $outputFile).Length
@@ -207,10 +300,30 @@ for ($i = 0; $i -lt $allFiles.Count; $i++) {
                 $failed++
             }
         } else {
-            Write-ColorOutput "   Transcription failed with exit code: $LASTEXITCODE" 'Error'
-            if ($result) {
-                Write-ColorOutput "   Error details: $result" 'Error'
+            # Decode Windows error codes
+            $hexCode = "0x{0:X8}" -f [uint32]$LASTEXITCODE
+            $errorType = switch ($LASTEXITCODE) {
+                -1073740791 { "Application crash (stack buffer overrun)" }
+                -1073741819 { "Access violation" }
+                -1073741571 { "Stack overflow" }
+                -1073741515 { "DLL not found" }
+                default { "Unknown error" }
             }
+            
+            Write-ColorOutput "   Transcription failed with exit code: $LASTEXITCODE ($hexCode) - $errorType" 'Error'
+            
+            # Show captured output/error
+            if ($result -and $result.Count -gt 0) {
+                Write-ColorOutput "   Output/Error details:" 'Error'
+                foreach ($line in $result) {
+                    if ($line.ToString().Trim()) {
+                        Write-ColorOutput "     $line" 'Error'
+                    }
+                }
+            } else {
+                Write-ColorOutput "   No output captured - process crashed before producing output" 'Error'
+            }
+            
             $failed++
         }
     }

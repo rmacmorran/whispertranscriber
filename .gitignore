@@ -65,6 +65,7 @@ logs/
 
 # Transcript files (exclude user-generated transcripts)
 transcripts/
+*.txt
 
 # Model cache (Whisper models are cached automatically)
 .cache/

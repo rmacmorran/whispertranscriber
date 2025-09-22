@@ -376,7 +376,12 @@ class TranscriberApp:
             
             # Console output for non-GUI mode
             if self.suppress_gui:
-                print(line)
+                try:
+                    print(line)
+                except UnicodeEncodeError:
+                    # If line contains chars that can't be encoded, encode safely
+                    safe_line = line.encode('ascii', errors='replace').decode('ascii')
+                    print(safe_line)
             
             # Update statistics
             self.stats['chunks_transcribed'] += 1
@@ -765,11 +770,19 @@ class TranscriberApp:
                         transcript_parts.append(formatted_text)
                         
                         # Show progress
-                        progress_msg = f"Chunk {i+1}/{total_chunks}: {result.text.strip()[:50]}..."
                         if not self.suppress_gui:
+                            progress_msg = f"Chunk {i+1}/{total_chunks}: {result.text.strip()[:50]}..."
                             console.print(f"[cyan]{progress_msg}[/cyan]")
                         else:
-                            print(progress_msg)
+                            # For suppress_gui mode, encode transcript text safely for console output
+                            try:
+                                transcript_preview = result.text.strip()[:50]
+                                progress_msg = f"Chunk {i+1}/{total_chunks}: {transcript_preview}..."
+                                print(progress_msg)
+                            except UnicodeEncodeError:
+                                # If transcript contains chars that can't be encoded, show without preview
+                                progress_msg = f"Chunk {i+1}/{total_chunks}: [text contains special characters]..."
+                                print(progress_msg)
             
             # Stop Whisper engine
             self.whisper_engine.stop()
