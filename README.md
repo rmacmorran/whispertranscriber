@@ -73,9 +73,11 @@ Either clone this repository or create the files manually:
 
 ```powershell
 # Clone the repository (recommended)
-git clone https://github.com/rmacmorran/whisper-transcriber.git .
+git clone https://github.com/rmacmorran/whispertranscriber.git .
 
-# Or download individual files if you prefer not to use git
+# Alternative: Download as ZIP file without git
+# Go to https://github.com/rmacmorran/whispertranscriber
+# Click "Code" -> "Download ZIP" -> Extract to whisper-transcriber folder
 ```
 
 Required files:
