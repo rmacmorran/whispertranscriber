@@ -37,12 +37,14 @@ class TranscriberApp:
     Main application class for real-time audio transcription
     """
     
-    def __init__(self, config_path: str = "config.yaml"):
+    def __init__(self, config_path: str = "config.yaml", output_file: Optional[str] = None, suppress_gui: bool = False):
         """
         Initialize the transcriber application
         
         Args:
             config_path: Path to configuration file
+            output_file: Optional output file path for saving transcriptions
+            suppress_gui: Whether to suppress the GUI and run in console mode
         """
         self.config_path = config_path
         self.config = self.load_config()
@@ -58,7 +60,10 @@ class TranscriberApp:
         self.shutdown_event = threading.Event()
         self.transcription_thread = None
         
-        # Output
+        # Output configuration
+        self.output_file = output_file
+        self.suppress_gui = suppress_gui
+        self.output_file_handle = None
         self.transcript_lines = []  # Store transcription lines for display
         self.max_transcript_lines = 50  # Maximum lines to keep in memory
         
@@ -320,6 +325,19 @@ class TranscriberApp:
             if len(self.transcript_lines) > self.max_transcript_lines:
                 self.transcript_lines.pop(0)
             
+            # Write to output file if specified
+            if self.output_file and self.output_file_handle:
+                try:
+                    self.output_file_handle.write(line + "\n")
+                    self.output_file_handle.flush()  # Ensure immediate write
+                except Exception as e:
+                    logger = logging.getLogger(__name__)
+                    logger.error(f"Failed to write to output file: {e}")
+            
+            # Console output for non-GUI mode
+            if self.suppress_gui:
+                print(line)
+            
             # Update statistics
             self.stats['chunks_transcribed'] += 1
             self.stats['words_transcribed'] += len(result.text.split())
@@ -431,6 +449,19 @@ class TranscriberApp:
         logger = logging.getLogger(__name__)
         
         try:
+            # Open output file if specified
+            if self.output_file:
+                try:
+                    # Create directory if it doesn't exist
+                    output_path = Path(self.output_file)
+                    output_path.parent.mkdir(parents=True, exist_ok=True)
+                    
+                    self.output_file_handle = open(self.output_file, 'w', encoding='utf-8')
+                    console.print(f"[green]✅ Output file opened: {self.output_file}[/green]")
+                except Exception as e:
+                    console.print(f"[red]❌ Failed to open output file: {e}[/red]")
+                    raise
+            
             # Initialize components
             console.print("[yellow]Initializing components...[/yellow]")
             self.initialize_components()
@@ -454,7 +485,10 @@ class TranscriberApp:
             
             # Setup signal handlers
             def signal_handler(signum, frame):
-                console.print("\n[yellow]Received interrupt signal, shutting down...[/yellow]")
+                if self.suppress_gui:
+                    print("\nReceived interrupt signal, shutting down...")
+                else:
+                    console.print("\n[yellow]Received interrupt signal, shutting down...[/yellow]")
                 self.shutdown()
                 sys.exit(0)
             
@@ -462,18 +496,37 @@ class TranscriberApp:
             signal.signal(signal.SIGTERM, signal_handler)
             
             # Main display loop
-            console.print("[green]✅ Transcription started! Press Ctrl+C to stop.[/green]\n")
-            
-            with Live(self.create_display(), refresh_per_second=2, screen=True) as live:
+            if self.suppress_gui:
+                # Console mode - simple text output
+                print("✅ Transcription started! Press Ctrl+C to stop.")
+                print(f"Model: {self.config['whisper']['model_size']}, Device: {self.whisper_engine.device}")
+                if self.output_file:
+                    print(f"Writing to: {self.output_file}")
+                print("Listening for audio...\n")
+                
+                # Simple wait loop for console mode
                 while not self.shutdown_event.is_set():
-                    live.update(self.create_display())
                     time.sleep(0.5)
+            else:
+                # GUI mode with rich interface
+                console.print("[green]✅ Transcription started! Press Ctrl+C to stop.[/green]\n")
+                
+                with Live(self.create_display(), refresh_per_second=2, screen=True) as live:
+                    while not self.shutdown_event.is_set():
+                        live.update(self.create_display())
+                        time.sleep(0.5)
             
         except KeyboardInterrupt:
-            console.print("\n[yellow]Interrupted by user[/yellow]")
+            if self.suppress_gui:
+                print("\nInterrupted by user")
+            else:
+                console.print("\n[yellow]Interrupted by user[/yellow]")
         except Exception as e:
             logger.error(f"Application error: {e}")
-            console.print(f"[red]❌ Application error: {e}[/red]")
+            if self.suppress_gui:
+                print(f"❌ Application error: {e}")
+            else:
+                console.print(f"[red]❌ Application error: {e}[/red]")
         finally:
             self.shutdown()
     
@@ -501,6 +554,17 @@ class TranscriberApp:
         if self.audio_buffer:
             self.audio_buffer.stop()
         
+        # Close output file if open
+        if self.output_file_handle:
+            try:
+                self.output_file_handle.close()
+                if self.suppress_gui:
+                    print(f"Transcription saved to: {self.output_file}")
+                else:
+                    console.print(f"[green]Transcription saved to: {self.output_file}[/green]")
+            except Exception as e:
+                logger.error(f"Failed to close output file: {e}")
+        
         logger.info("Application shutdown complete")
 
 
@@ -513,10 +577,13 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python main.py                    # Run with default settings
-  python main.py --list-devices     # Show available audio devices
-  python main.py --device 31        # Use specific audio device
-  python main.py --model small      # Use small model for better accuracy
+  python main.py                              # Run with default settings (GUI mode)
+  python main.py --list-devices               # Show available audio devices
+  python main.py --device 31                  # Use specific audio device
+  python main.py --model small                # Use small model for better accuracy
+  python main.py --output transcript.txt      # Save transcription to file
+  python main.py --no-gui                     # Run in console mode without GUI
+  python main.py -d 31 -o output.txt --no-gui # Console mode with device and output file
         """
     )
     
@@ -539,6 +606,13 @@ Examples:
     parser.add_argument('--language',
                        help='Language code (e.g., en, es, fr) or auto for detection')
     
+    parser.add_argument('--output', '-o',
+                       help='Output file path for saving transcriptions')
+    
+    parser.add_argument('--no-gui', '--suppress-gui',
+                       action='store_true',
+                       help='Suppress GUI and run in console mode')
+    
     args = parser.parse_args()
     
     # Handle list devices
@@ -548,7 +622,11 @@ Examples:
     
     # Create and configure app
     try:
-        app = TranscriberApp(config_path=args.config)
+        app = TranscriberApp(
+            config_path=args.config,
+            output_file=args.output,
+            suppress_gui=args.no_gui
+        )
         
         # Apply command line overrides
         if args.device is not None:
