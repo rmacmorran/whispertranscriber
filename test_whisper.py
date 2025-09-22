@@ -13,21 +13,37 @@ from rich.text import Text
 
 console = Console()
 
+# Console-safe output function for Windows compatibility
+def console_print(message, style=None):
+    """Print message with Unicode error handling for Windows console"""
+    try:
+        if style:
+            console.print(message, style=style)
+        else:
+            console.print(message)
+    except UnicodeEncodeError:
+        # Remove emojis and special characters for console output
+        safe_message = message.replace('✅', '[OK]').replace('❌', '[FAIL]').replace('⚠️', '[WARN]').replace('🎵', '').replace('🧪', '').replace('🚀', '').replace('💻', '').replace('🎉', '').replace('💡', '')
+        if style:
+            console.print(safe_message, style=style)
+        else:
+            console.print(safe_message)
+
 def test_whisper_installation():
     """Test if faster-whisper is properly installed"""
-    console.print("[bold blue]Testing Faster-Whisper Installation[/bold blue]")
+    console_print("[bold blue]Testing Faster-Whisper Installation[/bold blue]")
     
     try:
         from faster_whisper import WhisperModel
-        console.print("✅ faster-whisper imported successfully")
+        console_print("✅ faster-whisper imported successfully")
         return True
     except ImportError as e:
-        console.print(f"[red]❌ faster-whisper import failed: {e}[/red]")
+        console_print(f"[red]❌ faster-whisper import failed: {e}[/red]")
         return False
 
 def test_whisper_model_loading():
     """Test loading a small Whisper model"""
-    console.print("\n[bold blue]Testing Whisper Model Loading[/bold blue]")
+    console_print("\n[bold blue]Testing Whisper Model Loading[/bold blue]")
     
     try:
         from faster_whisper import WhisperModel
@@ -50,12 +66,12 @@ def test_whisper_model_loading():
             
         # Get model info
         device_info = "CUDA (GPU)" if torch.cuda.is_available() else "CPU"
-        console.print(f"Model: base, Device: {device_info}")
+        console_print(f"Model: base, Device: {device_info}")
         
         return model, True
         
     except Exception as e:
-        console.print(f"[red]❌ Model loading failed: {e}[/red]")
+        console_print(f"[red]❌ Model loading failed: {e}[/red]")
         return None, False
 
 def generate_test_speech_audio(sample_rate=16000, duration=3.0):
@@ -91,7 +107,7 @@ def generate_test_speech_audio(sample_rate=16000, duration=3.0):
 
 def test_whisper_transcription():
     """Test actual transcription with synthetic audio"""
-    console.print("\n[bold blue]Testing Whisper Transcription[/bold blue]")
+    console_print("\n[bold blue]Testing Whisper Transcription[/bold blue]")
     
     # Load model
     model, success = test_whisper_model_loading()
@@ -101,10 +117,10 @@ def test_whisper_transcription():
     try:
         # Generate test audio
         test_audio = generate_test_speech_audio(duration=3.0)
-        console.print(f"Generated {len(test_audio)/16000:.1f}s of synthetic audio")
+        console_print(f"Generated {len(test_audio)/16000:.1f}s of synthetic audio")
         
         # Transcribe
-        console.print("Running transcription...")
+        console_print("Running transcription...")
         start_time = time.time()
         
         segments, info = model.transcribe(
@@ -124,41 +140,41 @@ def test_whisper_transcription():
         for segment in segments:
             segment_count += 1
             transcript_text += segment.text
-            console.print(f"Segment {segment_count}: '{segment.text.strip()}' "
+            console_print(f"Segment {segment_count}: '{segment.text.strip()}' "
                          f"({segment.start:.2f}s - {segment.end:.2f}s)")
         
         # Display results
-        console.print(f"\n[green]✅ Transcription completed in {transcription_time:.2f}s[/green]")
-        console.print(f"Audio duration: {len(test_audio)/16000:.2f}s")
-        console.print(f"Real-time factor: {transcription_time / (len(test_audio)/16000):.2f}")
-        console.print(f"Segments: {segment_count}")
-        console.print(f"Language detected: {info.language} (probability: {info.language_probability:.2f})")
+        console_print(f"\n[green]✅ Transcription completed in {transcription_time:.2f}s[/green]")
+        console_print(f"Audio duration: {len(test_audio)/16000:.2f}s")
+        console_print(f"Real-time factor: {transcription_time / (len(test_audio)/16000):.2f}")
+        console_print(f"Segments: {segment_count}")
+        console_print(f"Language detected: {info.language} (probability: {info.language_probability:.2f})")
         
         if transcript_text.strip():
-            console.print(f"Full transcript: '{transcript_text.strip()}'")
+            console_print(f"Full transcript: '{transcript_text.strip()}'")
         else:
-            console.print("[yellow]⚠️  No text transcribed (expected with synthetic audio)[/yellow]")
+            console_print("[yellow]⚠️  No text transcribed (expected with synthetic audio)[/yellow]")
         
         # Performance check
         rtf = transcription_time / (len(test_audio)/16000)
         if rtf < 1.0:
-            console.print(f"[green]✅ Real-time performance: {rtf:.2f} (< 1.0 is good)[/green]")
+            console_print(f"[green]✅ Real-time performance: {rtf:.2f} (< 1.0 is good)[/green]")
         else:
-            console.print(f"[yellow]⚠️  Slower than real-time: {rtf:.2f}[/yellow]")
+            console_print(f"[yellow]⚠️  Slower than real-time: {rtf:.2f}[/yellow]")
         
         return True
         
     except Exception as e:
-        console.print(f"[red]❌ Transcription failed: {e}[/red]")
+        console_print(f"[red]❌ Transcription failed: {e}[/red]")
         return False
 
 def test_gpu_memory_usage():
     """Test GPU memory usage if CUDA is available"""
     if not torch.cuda.is_available():
-        console.print("\n[yellow]Skipping GPU memory test - CUDA not available[/yellow]")
+        console_print("\n[yellow]Skipping GPU memory test - CUDA not available[/yellow]")
         return True
     
-    console.print("\n[bold blue]Testing GPU Memory Usage[/bold blue]")
+    console_print("\n[bold blue]Testing GPU Memory Usage[/bold blue]")
     
     try:
         import pynvml
@@ -168,12 +184,12 @@ def test_gpu_memory_usage():
         handle = pynvml.nvmlDeviceGetHandleByIndex(0)
         mem_info = pynvml.nvmlDeviceGetMemoryInfo(handle)
         
-        console.print(f"GPU Memory - Total: {mem_info.total // (1024**2)} MB")
-        console.print(f"GPU Memory - Used: {mem_info.used // (1024**2)} MB")
-        console.print(f"GPU Memory - Free: {mem_info.free // (1024**2)} MB")
+        console_print(f"GPU Memory - Total: {mem_info.total // (1024**2)} MB")
+        console_print(f"GPU Memory - Used: {mem_info.used // (1024**2)} MB")
+        console_print(f"GPU Memory - Free: {mem_info.free // (1024**2)} MB")
         
         # Load model and check memory usage
-        console.print("\nTesting memory usage with model loading...")
+        console_print("\nTesting memory usage with model loading...")
         
         from faster_whisper import WhisperModel
         model = WhisperModel("base", device="cuda", compute_type="float16")
@@ -182,17 +198,17 @@ def test_gpu_memory_usage():
         mem_info_after = pynvml.nvmlDeviceGetMemoryInfo(handle)
         memory_used = (mem_info_after.used - mem_info.used) // (1024**2)
         
-        console.print(f"Memory used by Whisper model: ~{memory_used} MB")
+        console_print(f"Memory used by Whisper model: ~{memory_used} MB")
         
         if memory_used < 2000:  # Less than 2GB
-            console.print("[green]✅ Memory usage looks reasonable[/green]")
+            console_print("[green]✅ Memory usage looks reasonable[/green]")
         else:
-            console.print("[yellow]⚠️  High memory usage detected[/yellow]")
+            console_print("[yellow]⚠️  High memory usage detected[/yellow]")
         
         return True
         
     except Exception as e:
-        console.print(f"[yellow]⚠️  GPU memory test failed: {e}[/yellow]")
+        console_print(f"[yellow]⚠️  GPU memory test failed: {e}[/yellow]")
         return True  # Don't fail the whole test suite for this
 
 def display_test_summary():
@@ -219,7 +235,7 @@ def display_test_summary():
     return Panel(text, title="Test Information", border_style="blue")
 
 if __name__ == "__main__":
-    console.print("[bold green]🎵 Faster-Whisper Test Suite[/bold green]\n")
+    console_print("[bold green]🎵 Faster-Whisper Test Suite[/bold green]\n")
     
     # Show test information
     console.print(display_test_summary())
@@ -240,19 +256,19 @@ if __name__ == "__main__":
     test4_passed = test_gpu_memory_usage() if test2_passed else True
     
     # Summary
-    console.print(f"\n[bold]Test Results:[/bold]")
-    console.print(f"Installation: {'✅ PASS' if test1_passed else '❌ FAIL'}")
-    console.print(f"Model Loading: {'✅ PASS' if test2_passed else '❌ FAIL'}")
-    console.print(f"Transcription: {'✅ PASS' if test3_passed else '❌ FAIL'}")
-    console.print(f"GPU Memory: {'✅ PASS' if test4_passed else '❌ FAIL'}")
+    console_print(f"\n[bold]Test Results:[/bold]")
+    console_print(f"Installation: {'✅ PASS' if test1_passed else '❌ FAIL'}")
+    console_print(f"Model Loading: {'✅ PASS' if test2_passed else '❌ FAIL'}")
+    console_print(f"Transcription: {'✅ PASS' if test3_passed else '❌ FAIL'}")
+    console_print(f"GPU Memory: {'✅ PASS' if test4_passed else '❌ FAIL'}")
     
     all_passed = test1_passed and test2_passed and test3_passed and test4_passed
     
     if all_passed:
-        console.print("\n[bold green]🎉 All Whisper tests passed![/bold green]")
-        console.print("\n[yellow]💡 Ready to integrate with audio chunking pipeline![/yellow]")
+        console_print("\n[bold green]🎉 All Whisper tests passed![/bold green]")
+        console_print("\n[yellow]💡 Ready to integrate with audio chunking pipeline![/yellow]")
         
         if torch.cuda.is_available():
-            console.print("\n[green]🚀 GPU acceleration is working - expect fast transcription![/green]")
+            console_print("\n[green]🚀 GPU acceleration is working - expect fast transcription![/green]")
     else:
-        console.print("\n[bold red]❌ Some tests failed - check the errors above[/bold red]")
+        console_print("\n[bold red]❌ Some tests failed - check the errors above[/bold red]")
