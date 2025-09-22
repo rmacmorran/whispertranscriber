@@ -14,7 +14,7 @@ A high-performance, near-realtime audio transcription tool using OpenAI Whisper 
 
 ## 🚀 Performance
 
-With your RTX 2080 Ti, expect:
+With a modern NVIDIA GPU (RTX 2070+), expect:
 - **Real-time Factor < 0.1** (processes audio 10x faster than realtime)
 - **Low latency** - transcription appears within 1-3 seconds of speech
 - **Word boundary preservation** - VAD-based chunking prevents word clipping
@@ -34,8 +34,8 @@ With your RTX 2080 Ti, expect:
 
 ```powershell
 # Create project directory
-mkdir C:\Users\rmacmorran\projects\whisper-transcriber
-cd C:\Users\rmacmorran\projects\whisper-transcriber
+mkdir whisper-transcriber
+cd whisper-transcriber
 ```
 
 ### Step 2: Create Virtual Environment
@@ -54,7 +54,7 @@ python -m venv venv
 # Upgrade pip first
 python -m pip install --upgrade pip
 
-# Install PyTorch with CUDA support (for RTX 2080 Ti)
+# Install PyTorch with CUDA support (for NVIDIA GPUs)
 pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
 
 # Install Whisper and VAD components
@@ -71,6 +71,14 @@ pip install pyyaml rich pynvml
 
 Either clone this repository or create the files manually:
 
+```powershell
+# Clone the repository (recommended)
+git clone https://github.com/rmacmorran/whisper-transcriber.git .
+
+# Or download individual files if you prefer not to use git
+```
+
+Required files:
 - `whisper-transcriber.py` - Main application
 - `config.yaml` - Configuration file  
 - `whisper_engine.py` - Whisper transcription engine
@@ -364,7 +372,7 @@ C:\path\to\whisper-transcriber\batch-transcribe.ps1 -Timestamps
 .\batch-transcribe.ps1 [OPTIONS]
 
 Options:
-  -OutputDir <path>   Output directory (default: 'transcripts')
+  -OutputDir <path>   Output directory (default: current directory)
   -Timestamps         Include timestamps in output
   -Model <size>       Whisper model (tiny/base/small/medium/large)
   -Force              Overwrite existing transcripts
@@ -403,4 +411,4 @@ This project uses open-source components:
 
 ---
 
-**🎉 Enjoy real-time transcription with your RTX 2080 Ti!**
+**🎉 Enjoy real-time transcription with GPU acceleration!**

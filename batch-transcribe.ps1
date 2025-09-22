@@ -2,7 +2,7 @@
 # Processes all video and audio files in the current directory with Whisper Transcriber
 
 param(
-    [string]$OutputDir = "transcripts",
+    [string]$OutputDir = ".",
     [switch]$Timestamps,
     [string]$Model = "base",
     [switch]$Force,
@@ -19,7 +19,7 @@ USAGE:
     .\batch-transcribe.ps1 [OPTIONS]
 
 OPTIONS:
-    -OutputDir <path>   Output directory for transcripts (default: 'transcripts')
+    -OutputDir <path>   Output directory for transcripts (default: current directory)
     -Timestamps         Include timestamps in transcripts
     -Model <size>       Whisper model size (tiny/base/small/medium/large, default: 'base')
     -Force              Overwrite existing transcript files
@@ -80,22 +80,27 @@ function Format-Duration {
 
 # Find whisper-transcriber.py - check multiple locations
 $scriptPath = $null
+$configPath = $null
 
 # Try environment variable first (if set)
 if ($env:WHISPER_TRANSCRIBER_PATH -and (Test-Path $env:WHISPER_TRANSCRIBER_PATH)) {
     $scriptPath = $env:WHISPER_TRANSCRIBER_PATH
+    $configPath = Join-Path (Split-Path $scriptPath -Parent) "config.yaml"
 }
 # Try current directory
 elseif (Test-Path ".\whisper-transcriber.py") {
     $scriptPath = Resolve-Path ".\whisper-transcriber.py"
+    $configPath = Resolve-Path ".\config.yaml" -ErrorAction SilentlyContinue
 }
 # Try the directory where this batch script is located
 elseif (Test-Path (Join-Path $PSScriptRoot "whisper-transcriber.py")) {
     $scriptPath = Join-Path $PSScriptRoot "whisper-transcriber.py"
+    $configPath = Join-Path $PSScriptRoot "config.yaml"
 }
 # Try common installation paths
 elseif (Test-Path "C:\Users\rmacmorran\projects\whisper-transcriber\whisper-transcriber.py") {
     $scriptPath = "C:\Users\rmacmorran\projects\whisper-transcriber\whisper-transcriber.py"
+    $configPath = "C:\Users\rmacmorran\projects\whisper-transcriber\config.yaml"
 }
 
 if (-not $scriptPath -or -not (Test-Path $scriptPath)) {
@@ -141,6 +146,13 @@ Write-Host ""
 $baseArgs = @('-q')  # Quiet mode
 if ($Timestamps) { $baseArgs += '-t' }
 if ($Model -ne 'base') { $baseArgs += @('-m', $Model) }
+# Add config file path if found
+if ($configPath -and (Test-Path $configPath)) {
+    $baseArgs += @('-c', $configPath)
+    Write-ColorOutput "Using config file: $configPath" 'Info'
+} else {
+    Write-ColorOutput "Config file not found, using defaults" 'Warning'
+}
 
 # Process each file
 $successful = 0
@@ -151,7 +163,7 @@ $startTime = Get-Date
 Write-ColorOutput "Starting batch transcription..." 'Progress'
 Write-ColorOutput "Model: $Model" 'Info'
 Write-ColorOutput "Timestamps: $(if ($Timestamps) { 'Yes' } else { 'No' })" 'Info'
-Write-ColorOutput "Output: $OutputDir\" 'Info'
+Write-ColorOutput "Output: $(if ($OutputDir -eq '.') { 'current directory' } else { "$OutputDir\" })" 'Info'
 Write-Host ""
 
 for ($i = 0; $i -lt $allFiles.Count; $i++) {
@@ -219,11 +231,11 @@ Write-ColorOutput "Summary:" 'Info'
 Write-ColorOutput "   Successful: $successful" 'Success'
 Write-ColorOutput "   Failed: $failed" $(if ($failed -gt 0) { 'Error' } else { 'Info' })
 Write-ColorOutput "   Skipped: $skipped" $(if ($skipped -gt 0) { 'Warning' } else { 'Info' })
-Write-ColorOutput "   Output directory: $OutputDir\" 'Info'
+Write-ColorOutput "   Output directory: $(if ($OutputDir -eq '.') { 'current directory' } else { "$OutputDir\" })" 'Info'
 Write-ColorOutput "   Total time: $(Format-Duration $totalTime)" 'Info'
 
 if ($successful -gt 0) {
-    Write-ColorOutput "$successful transcript(s) saved to: $OutputDir\" 'Success'
+    Write-ColorOutput "$successful transcript(s) saved to: $(if ($OutputDir -eq '.') { 'current directory' } else { "$OutputDir\" })" 'Success'
 }
 
 if ($failed -gt 0) {

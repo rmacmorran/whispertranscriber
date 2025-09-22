@@ -133,7 +133,8 @@ class TranscriberApp:
                 'num_workers': 2,
                 'monitor_gpu': True,
                 'log_level': 'INFO',
-                'max_log_size': 10
+                'max_log_size': 10,
+                'enable_file_logging': False  # Set to True to enable transcriber.log
             }
         }
         
@@ -186,17 +187,33 @@ class TranscriberApp:
         """
         log_level = getattr(logging, self.config['performance']['log_level'].upper())
         
-        # Setup file logging
-        log_dir = Path('./logs')
-        log_dir.mkdir(exist_ok=True)
+        # Prepare handlers list
+        handlers = []
+        
+        # Add file handler if enabled
+        if self.config['performance'].get('enable_file_logging', False):
+            # Determine log file directory
+            if self.config['output'].get('output_dir'):
+                # Use output directory if specified
+                log_dir = Path(self.config['output']['output_dir'])
+            else:
+                # Use current working directory
+                log_dir = Path('.')
+            
+            log_dir.mkdir(parents=True, exist_ok=True)
+            log_file_path = log_dir / 'transcriber.log'
+            handlers.append(logging.FileHandler(log_file_path))
+        
+        # Add console handler for DEBUG level
+        if log_level == logging.DEBUG:
+            handlers.append(logging.StreamHandler(sys.stdout))
+        else:
+            handlers.append(logging.NullHandler())
         
         logging.basicConfig(
             level=log_level,
             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-            handlers=[
-                logging.FileHandler(log_dir / 'transcriber.log'),
-                logging.StreamHandler(sys.stdout) if log_level == logging.DEBUG else logging.NullHandler()
-            ]
+            handlers=handlers
         )
     
     def resolve_audio_device(self) -> Optional[int]:
