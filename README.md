@@ -227,6 +227,15 @@ Use `python whisper-transcriber.py --list-devices` to see available devices:
    - Activate virtual environment: `.\venv\Scripts\Activate.ps1`
    - Reinstall dependencies: `pip install -r requirements.txt`
 
+5. **GPU crashes (stack buffer overrun):**
+   - Error message: `Transcription failed with exit code: -1073740791 (0xC0000409)`
+   - **Solution 1:** Use a smaller model (`medium` instead of `large`)
+   - **Solution 2:** Force CPU-only processing with `-CpuOnly` flag: 
+     ```powershell
+     .\batch-transcribe.ps1 -CpuOnly -Model large -Timestamps
+     ```
+   - **Solution 3:** Edit `config.yaml` to use `compute_type: "float32"` instead of `"float16"`
+
 ### Testing Components
 
 ```powershell

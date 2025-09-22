@@ -85,14 +85,14 @@ $validationErrors = Test-Parameters
 if ($validationErrors.Count -gt 0) {
     Write-Host "Parameter validation failed:" -ForegroundColor Red
     foreach ($error in $validationErrors) {
-        Write-Host "  ❌ $error" -ForegroundColor Red
+        Write-Host "  [FAIL] $error" -ForegroundColor Red
     }
     Write-Host ""
     Write-Host "Use -Help to see valid options and examples." -ForegroundColor Yellow
     exit 1
 }
 
-Write-Host "✅ Parameters validated successfully" -ForegroundColor Green
+Write-Host "[OK] Parameters validated successfully" -ForegroundColor Green
 Write-Host ""
 
 # Supported file extensions
@@ -213,9 +213,9 @@ except Exception as e:
 "@ 2>&1
     
     if ($testResult -contains 'DEPS_OK') {
-        Write-ColorOutput "✅ Python dependencies validated" 'Success'
+        Write-ColorOutput "[OK] Python dependencies validated" 'Success'
     } else {
-        Write-ColorOutput "❌ Python dependency issues detected:" 'Error'
+        Write-ColorOutput "[FAIL] Python dependency issues detected:" 'Error'
         foreach ($line in $testResult) {
             Write-ColorOutput "   $line" 'Error'
         }
@@ -223,7 +223,7 @@ except Exception as e:
         exit 1
     }
 } catch {
-    Write-ColorOutput "❌ Failed to test Python environment: $($_.Exception.Message)" 'Error'
+    Write-ColorOutput "[FAIL] Failed to test Python environment: $($_.Exception.Message)" 'Error'
     exit 1
 }
 
@@ -312,7 +312,12 @@ for ($i = 0; $i -lt $allFiles.Count; $i++) {
             }
         } else {
             # Decode Windows error codes (handle negative values)
-            $hexCode = "0x{0:X8}" -f ([uint32]($LASTEXITCODE -band 0xFFFFFFFF))
+            # Convert negative exit code to hex without uint32 casting
+            if ($LASTEXITCODE -lt 0) {
+                $hexCode = "0x{0:X8}" -f ([uint32]($LASTEXITCODE + 4294967296))
+            } else {
+                $hexCode = "0x{0:X8}" -f $LASTEXITCODE
+            }
             $errorType = switch ($LASTEXITCODE) {
                 -1073740791 { "Application crash (stack buffer overrun)" }
                 -1073741819 { "Access violation" }
