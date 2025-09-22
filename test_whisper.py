@@ -23,11 +23,22 @@ def console_print(message, style=None):
             console.print(message)
     except UnicodeEncodeError:
         # Remove emojis and special characters for console output
-        safe_message = message.replace('✅', '[OK]').replace('❌', '[FAIL]').replace('⚠️', '[WARN]').replace('🎵', '').replace('🧪', '').replace('🚀', '').replace('💻', '').replace('🎉', '').replace('💡', '')
-        if style:
-            console.print(safe_message, style=style)
-        else:
-            console.print(safe_message)
+        import re
+        # Remove all emoji and Unicode symbols (more comprehensive)
+        safe_message = re.sub(r'[\U00010000-\U0010ffff]', '', message)  # Remove 4-byte Unicode
+        safe_message = safe_message.replace('✅', '[OK]').replace('❌', '[FAIL]').replace('⚠️', '[WARN]')
+        safe_message = safe_message.replace('🎵', '[MUSIC]').replace('🧪', '[TEST]').replace('🚀', '[GPU]')
+        safe_message = safe_message.replace('💻', '[CPU]').replace('🎉', '[SUCCESS]').replace('💡', '[TIP]')
+        
+        try:
+            if style:
+                console.print(safe_message, style=style)
+            else:
+                console.print(safe_message)
+        except UnicodeEncodeError:
+            # Last resort: use plain print() without Rich formatting
+            clean_message = re.sub(r'\[[^\]]*\]', '', safe_message)  # Remove Rich markup
+            print(clean_message)
 
 def test_whisper_installation():
     """Test if faster-whisper is properly installed"""
@@ -237,9 +248,14 @@ def display_test_summary():
 if __name__ == "__main__":
     console_print("[bold green]🎵 Faster-Whisper Test Suite[/bold green]\n")
     
-    # Show test information
-    console.print(display_test_summary())
-    console.print()
+    # Show test information - wrap in try-catch for Unicode safety
+    try:
+        console.print(display_test_summary())
+        console.print()
+    except UnicodeEncodeError:
+        # Fallback to simple text output
+        console_print("[bold blue]Whisper Test Suite - Testing System Components[/bold blue]\n")
+        console_print("This test validates faster-whisper installation and performance.\n")
     
     # Test 1: Installation check
     test1_passed = test_whisper_installation()
