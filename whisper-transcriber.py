@@ -922,24 +922,24 @@ def main():
         epilog="""
 Examples:
   # Real-time transcription (default mode)
-  python main.py                              # Run with default settings (GUI mode)
-  python main.py --list-devices               # Show available audio devices
-  python main.py --device 31                  # Use specific audio device
-  python main.py --model small                # Use small model for better accuracy
-  python main.py --output transcript.txt      # Save transcription to file
-  python main.py --no-gui                     # Run in console mode without GUI
-  python main.py -q                           # Run in console mode (short form)
-  python main.py -d 31 -o output.txt -q       # Console mode with device and output file
+  python whisper-transcriber.py                              # Run with default settings (GUI mode)
+  python whisper-transcriber.py --list-devices               # Show available audio devices
+  python whisper-transcriber.py --device 31                  # Use specific audio device
+  python whisper-transcriber.py --model small                # Use small model for better accuracy
+  python whisper-transcriber.py --output transcript.txt      # Save transcription to file
+  python whisper-transcriber.py --no-gui                     # Run in console mode without GUI
+  python whisper-transcriber.py -q                           # Run in console mode (short form)
+  python whisper-transcriber.py -d 31 -o output.txt -q       # Console mode with device and output file
   
   # File transcription mode
-  python main.py -i audio.mp3                 # Transcribe audio file to console
-  python main.py -i video.mp4 -o transcript.txt # Transcribe video file to text file
-  python main.py -i recording.wav -q          # Transcribe in console mode
-  python main.py -i audio.m4a -m small --language en # Use small model with English language
-  python main.py -i video.mp4 -t -o transcript.txt # Include timestamps in output
-  python main.py -i video.mp4 -tq             # Transcribe with timestamps, console mode
-  python main.py -i video.mp4 -o subtitles.srt # Generate SRT subtitle file
-  python main.py -i audio.wav -o movie.srt -q  # Generate SRT in console mode
+  python whisper-transcriber.py -i audio.mp3                 # Transcribe audio file to console
+  python whisper-transcriber.py -i video.mp4 -o transcript.txt # Transcribe video file to text file
+  python whisper-transcriber.py -i recording.wav -q          # Transcribe in console mode
+  python whisper-transcriber.py -i audio.m4a -m small --language en # Use small model with English language
+  python whisper-transcriber.py -i video.mp4 -t -o transcript.txt # Include timestamps in output
+  python whisper-transcriber.py -i video.mp4 -tq             # Transcribe with timestamps, console mode
+  python whisper-transcriber.py -i video.mp4 -o subtitles.srt # Generate SRT subtitle file
+  python whisper-transcriber.py -i audio.wav -o movie.srt -q  # Generate SRT in console mode
         """
     )
     
