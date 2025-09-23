@@ -1,0 +1,879 @@
+1
+00:00:00,000 --> 00:00:05,000
+Yeah. Anyway, there you go. I'll let you take back over.
+
+2
+00:00:05,000 --> 00:00:10,000
+DIRECTOR HERSEY- All right. DIRECTOR DEWOLF- Master Day Scrum. DIRECTOR MACK PELOSI Organize that.
+
+3
+00:00:10,000 --> 00:00:15,000
+all righty
+
+4
+00:00:15,000 --> 00:00:20,000
+DIRECTOR HAMPSON- So first we have Dan with this 2-1-4-7-6
+
+5
+00:00:20,000 --> 00:00:25,000
+I think we're getting close to getting this off our plate and into stage for you.
+
+6
+00:00:25,000 --> 00:00:30,000
+He just sent another note to that group, Andrew.
+
+7
+00:00:30,000 --> 00:00:35,000
+Chelsea, Amy from marketplace and said, you know, I asked him last night.
+
+8
+00:00:35,000 --> 00:00:40,000
+have any objections to this and cricket so far. So I sent him another note because Rob's ready to go ahead.
+
+9
+00:00:40,000 --> 00:00:45,000
+push this change and a few other changes and then we'll do a UAT.
+
+10
+00:00:45,000 --> 00:00:50,000
+in on residential probably, you know.
+
+11
+00:00:50,000 --> 00:00:55,000
+I don't know if they're working or what they're doing next week, and then we'll get this moved to Pratt.
+
+12
+00:00:55,000 --> 00:01:00,000
+So there's a few more that are like that. So when we get to those, I'll just say, yep.
+
+13
+00:01:00,000 --> 00:01:05,000
+part of the residential push. Okay. Easy peasy. Christy.
+
+14
+00:01:05,000 --> 00:01:10,000
+1-2-9-2-3-4
+
+15
+00:01:10,000 --> 00:01:15,000
+No new update.
+
+16
+00:01:15,000 --> 00:01:20,000
+All right. Same on the next one. There's no new update on that.
+
+17
+00:01:20,000 --> 00:01:25,000
+one. ELLIE WILSON- All righty. Dan. DAN BALZ- Yeah it's just
+
+18
+00:01:25,000 --> 00:01:30,000
+It's in the queue. All right. Aaron.
+
+19
+00:01:30,000 --> 00:01:35,000
+store true ice I know you didn't
+
+20
+00:01:35,000 --> 00:01:40,000
+DIRECTOR MACKAY I'll update on that. Yeah. DIRECTOR MACKAY Okay. DIRECTOR MACKAY We've not made any progress on that.
+
+21
+00:01:40,000 --> 00:01:45,000
+I think Lawrence was going to handle next steps for that.
+
+22
+00:01:45,000 --> 00:01:50,000
+Undertexter av Nicolai Winther
+
+23
+00:01:50,000 --> 00:01:55,000
+All righty. Dan, 2023.
+
+24
+00:01:55,000 --> 00:02:00,000
+penetration test. Yeah I put the update in there. Still.
+
+25
+00:02:00,000 --> 00:02:05,000
+three of 22 resolved and in pride um there's going to be four
+
+26
+00:02:05,000 --> 00:02:10,000
+changes going out and I have to confirm looks like purpose.
+
+27
+00:02:10,000 --> 00:02:15,000
+fix the four items that they had for international. So hopefully.
+
+28
+00:02:15,000 --> 00:02:20,000
+That number will drop or go to the upper number will go to.
+
+29
+00:02:20,000 --> 00:02:25,000
+11 in the coming weeks.
+
+30
+00:02:25,000 --> 00:02:30,000
+perhaps it'll go to seven as soon as today depending on if they deployed those to
+
+31
+00:02:30,000 --> 00:02:35,000
+i think they did that's the thing i got but i'm just gonna go check something and yeah
+
+32
+00:02:35,000 --> 00:02:40,000
+So moving along. Awesome.
+
+33
+00:02:40,000 --> 00:02:45,000
+Next one, Erin, Megan.
+
+34
+00:02:45,000 --> 00:02:50,000
+I have the calculator up for this.
+
+35
+00:02:50,000 --> 00:02:55,000
+built out and looking nice. I'm working on the actual recommendations, the actual
+
+36
+00:02:55,000 --> 00:03:00,000
+calculations of it.
+
+37
+00:03:00,000 --> 00:03:05,000
+I know I've been working on the calculator for a bit, but... Yeah, I haven't done it.
+
+38
+00:03:05,000 --> 00:03:10,000
+anything so would this update still be correct then built out
+
+39
+00:03:10,000 --> 00:03:15,000
+later outline yeah i think it's probably more than 20 but okay
+
+40
+00:03:15,000 --> 00:03:20,000
+Do you want me just to push it to 30 or 40?
+
+41
+00:03:20,000 --> 00:03:25,000
+be okay with saying 30. yeah
+
+42
+00:03:25,000 --> 00:03:30,000
+Ready?
+
+43
+00:03:30,000 --> 00:03:35,000
+Next one we got is Dan, eStore Review and Purge.
+
+44
+00:03:35,000 --> 00:03:40,000
+Yeah, I have the solution. They actually have something in there.
+
+45
+00:03:40,000 --> 00:03:45,000
+where you can have it show that your account's been disabled.
+
+46
+00:03:45,000 --> 00:03:50,000
+And so that way, if somebody would come back with an old account.
+
+47
+00:03:50,000 --> 00:03:55,000
+that's been not used for several years, they would get a message as opposed to just it.
+
+48
+00:03:55,000 --> 00:04:00,000
+go with erroring out i also found out what other login statuses do so it's good exercise
+
+49
+00:04:00,000 --> 00:04:05,000
+I know what I need to do. And now the work to get.
+
+50
+00:04:05,000 --> 00:04:10,000
+the logistics to get it moved into stage, execute the script and stage, test and...
+
+51
+00:04:10,000 --> 00:04:15,000
+stage do the script and proud all that the logistics are going to take longer
+
+52
+00:04:15,000 --> 00:04:20,000
+it's going to take to fix the issue but there you go i'll get that
+
+53
+00:04:20,000 --> 00:04:25,000
+going when I can. We got one outstanding item on this next one.
+
+54
+00:04:25,000 --> 00:04:30,000
+There's been some back and forth. There's a resource that's in Azure.
+
+55
+00:04:30,000 --> 00:04:35,000
+that apparently nobody has access to. Shanks, Patricia, David.
+
+56
+00:04:35,000 --> 00:04:40,000
+Andy I mean God I don't know so
+
+57
+00:04:40,000 --> 00:04:45,000
+Apparently, apparently this.
+
+58
+00:04:45,000 --> 00:04:50,000
+This vaulted resource is, yeah, nobody can.
+
+59
+00:04:50,000 --> 00:04:55,000
+access it so we don't know if there's anything in it so that's the last thing we want to delete before we call this done
+
+60
+00:04:55,000 --> 00:05:00,000
+and I don't know what the next steps are because like I just said all those people
+
+61
+00:05:00,000 --> 00:05:05,000
+don't have can't get into it to see what we would be deleting
+
+62
+00:05:05,000 --> 00:05:10,000
+So I'll look to David Alton to give me advice on that.
+
+63
+00:05:10,000 --> 00:05:15,000
+Yeah, that's true.
+
+64
+00:05:15,000 --> 00:05:20,000
+That is true. I'll ask if that's what they want to do.
+
+65
+00:05:20,000 --> 00:05:25,000
+All right, Christy.
+
+66
+00:05:25,000 --> 00:05:30,000
+So we just met on this.
+
+67
+00:05:30,000 --> 00:05:35,000
+I noticed that you had put in this. Are you thinking we should put this on hold? I thought they're going to.
+
+68
+00:05:35,000 --> 00:05:40,000
+to be working on it. Now, this is the one. This is the one.
+
+69
+00:05:40,000 --> 00:05:45,000
+one that nor I don't know how much work
+
+70
+00:05:45,000 --> 00:05:50,000
+Well, Aaron, what is your thought? Based on our conversation the other day, this is the one where NORS…
+
+71
+00:05:50,000 --> 00:05:55,000
+in those new fields and this is going to be the new parts inquiry and
+
+72
+00:05:55,000 --> 00:06:00,000
+I think there's going to be a lot more to do with this because there's more.
+
+73
+00:06:00,000 --> 00:06:05,000
+things than just those fields that are going to need to point to E1.
+
+74
+00:06:05,000 --> 00:06:10,000
+If this is the same application we're talking about doing that feature flag yesterday, we have to...
+
+75
+00:06:10,000 --> 00:06:15,000
+make sure that the data sources are all right.
+
+76
+00:06:15,000 --> 00:06:20,000
+to add, I guess it's not that much, but it's not as done as nor thinks.
+
+77
+00:06:20,000 --> 00:06:25,000
+it is, I think. Okay, because I thought we were a little close.
+
+78
+00:06:25,000 --> 00:06:30,000
+closer to but I guess you're right especially we're going to piggyback off of this
+
+79
+00:06:30,000 --> 00:06:35,000
+ticket for the feature flag or the other ticket because the other ticket is for e1 and
+
+80
+00:06:35,000 --> 00:06:40,000
+I kind of thought that's what David was saying. The original part.
+
+81
+00:06:40,000 --> 00:06:45,000
+arts inquiry because this isn't a branch right on on in uh
+
+82
+00:06:45,000 --> 00:06:50,000
+source control so uh we did branch it but yeah it's going to be so
+
+83
+00:06:50,000 --> 00:06:55,000
+application so the other will merge application
+
+84
+00:06:55,000 --> 00:07:00,000
+The other application for E1 is the one that we've got to.
+
+85
+00:07:00,000 --> 00:07:05,000
+focus on the feature flag for, I thought, because that we.
+
+86
+00:07:05,000 --> 00:07:10,000
+David wants it so it works in E1 and it works in world and we can just flip that flag.
+
+87
+00:07:10,000 --> 00:07:15,000
+So I was thinking that flag would be over there. Then do we want another flag?
+
+88
+00:07:15,000 --> 00:07:20,000
+for this one where we have the new fields present. No, no, so there's only...
+
+89
+00:07:20,000 --> 00:07:25,000
+one applic there isn't another application there's only one right so originally
+
+90
+00:07:25,000 --> 00:07:30,000
+I thought we were going to have like an E1 version and a world version, but that's not, that's not.
+
+91
+00:07:30,000 --> 00:07:35,000
+what Dave wants it and I guess this is how we're how we're handling it which makes sense
+
+92
+00:07:35,000 --> 00:07:40,000
+Because when he said it has to be deployed to hundreds of machines, yeah, you don't want to.
+
+93
+00:07:40,000 --> 00:07:45,000
+redeploy all those MSIs all at the same time along with everything else.
+
+94
+00:07:45,000 --> 00:07:50,000
+So this has to be a flag in like...
+
+95
+00:07:50,000 --> 00:07:55,000
+the configuration that we can just update a configuration file.
+
+96
+00:07:55,000 --> 00:08:00,000
+right but there's two things at play here right
+
+97
+00:08:00,000 --> 00:08:05,000
+There's the original parts. There's a table, Zach, saying. So, no, so we are changing.
+
+98
+00:08:05,000 --> 00:08:10,000
+the original parts inquiry, like we're updating that to contain all of the features.
+
+99
+00:08:10,000 --> 00:08:15,000
+for E1 that will be activated with a feature flag.
+
+100
+00:08:15,000 --> 00:08:20,000
+talk about it offline but basically there there's more to do with this one
+
+101
+00:08:20,000 --> 00:08:25,000
+Yeah, I mean, there's this one and there's the other ticket, Christy. So I don't know which ticket.
+
+102
+00:08:25,000 --> 00:08:30,000
+we want to bury this or, you know, leverage that feature.
+
+103
+00:08:30,000 --> 00:08:35,000
+It needs to be on this one. I think so too, because it is.
+
+104
+00:08:35,000 --> 00:08:40,000
+because the other one is really for CRP and we want to just put that to the side and say this is ready for.
+
+105
+00:08:40,000 --> 00:08:45,000
+CRP. And then this one is where we do all the real work on.
+
+106
+00:08:45,000 --> 00:08:50,000
+and getting it prepared. I got you. I got you. Okay.
+
+107
+00:08:50,000 --> 00:08:55,000
+That's fine. Yeah, then somebody can remove that comment if you want.
+
+108
+00:08:55,000 --> 00:09:00,000
+I thought since we weren't deploying this for several months
+
+109
+00:09:00,000 --> 00:09:05,000
+to put it on hold. Since we're not going to.
+
+110
+00:09:05,000 --> 00:09:10,000
+deploy this until we clean the data. Well, no, I think we are going to.
+
+111
+00:09:10,000 --> 00:09:15,000
+I think we're, so the idea is that it's a feature flag. So we just leave the new.
+
+112
+00:09:15,000 --> 00:09:20,000
+fields off until we switch to E1 or we're ready to bring it in.
+
+113
+00:09:20,000 --> 00:09:25,000
+Or maybe we have two feature flags, one for, well, we'll talk about it, but I think the
+
+114
+00:09:25,000 --> 00:09:30,000
+of this is totally independent of the data cleanup effort. If I was understanding Dave correctly.
+
+115
+00:09:30,000 --> 00:09:35,000
+Exactly. Christy, is that what you got too?
+
+116
+00:09:35,000 --> 00:09:40,000
+Yeah, I think what the plan was is to hide those fields, to go ahead and have them there.
+
+117
+00:09:40,000 --> 00:09:45,000
+but hide them yeah until he won yeah but that way we can just turn them back on
+
+118
+00:09:45,000 --> 00:09:50,000
+on when we're ready. We don't have to redeploy.
+
+119
+00:09:50,000 --> 00:09:55,000
+And I guess it probably will have, well, who knows how long the data cleanup effort will take.
+
+120
+00:09:55,000 --> 00:10:00,000
+be yeah i thought a long time personally but okay
+
+121
+00:10:00,000 --> 00:10:05,000
+all good yeah all righty the next one we got is for
+
+122
+00:10:05,000 --> 00:10:10,000
+Erin.
+
+123
+00:10:10,000 --> 00:10:15,000
+I kind of put this one on hold because the ice calculator was more important.
+
+124
+00:10:15,000 --> 00:10:20,000
+probably start this one well I started it
+
+125
+00:10:20,000 --> 00:10:25,000
+I'll probably come back to this either tomorrow or...
+
+126
+00:10:25,000 --> 00:10:30,000
+after New Year's. Okay.
+
+127
+00:10:30,000 --> 00:10:35,000
+All right. Oops. Our next one is Dan.
+
+128
+00:10:35,000 --> 00:10:40,000
+the add to residential. DIRECTOR HERSEY- Yeah that's.
+
+129
+00:10:40,000 --> 00:10:45,000
+going to be done next year. It's kind of interesting. I went through every ticket.
+
+130
+00:10:45,000 --> 00:10:50,000
+that I had open yesterday and I for some reason these weren't showing up
+
+131
+00:10:50,000 --> 00:10:55,000
+the two there's been two so far because i put updates on like 20 tickets yesterday
+
+132
+00:10:55,000 --> 00:11:00,000
+I have that issue sometimes too. Okay. I don't know what I did wrong.
+
+133
+00:11:00,000 --> 00:11:05,000
+Well, here's another one, Cloudflare Enterprise.
+
+134
+00:11:05,000 --> 00:11:10,000
+Yeah, that's frustrating. No, no update on it.
+
+135
+00:11:10,000 --> 00:11:15,000
+same same update as what was in there before so you can just change the date if you want
+
+136
+00:11:15,000 --> 00:11:20,000
+Easy peasy. All right. Our next one is for.
+
+137
+00:11:20,000 --> 00:11:25,000
+Christy, Creatability for Users. Yeah, there's no update on that.
+
+138
+00:11:25,000 --> 00:11:30,000
+this one right now. Awesome sauce. Next one, Dan.
+
+139
+00:11:30,000 --> 00:11:35,000
+Yeah, we're going back and forth.
+
+140
+00:11:35,000 --> 00:11:40,000
+one has an accurate update we're going back and forth with shopify support and they're not getting it
+
+141
+00:11:40,000 --> 00:11:45,000
+So I don't know. But yeah, they need to help.
+
+142
+00:11:45,000 --> 00:11:50,000
+us understand what we need to do to get validated so we can get to the next step so this
+
+143
+00:11:50,000 --> 00:11:55,000
+Just slow going, but it is what it is.
+
+144
+00:11:55,000 --> 00:12:00,000
+All right. Megan anything on this one.
+
+145
+00:12:00,000 --> 00:12:05,000
+no i mean it's going okay cool
+
+146
+00:12:05,000 --> 00:12:10,000
+Do you want to go over any of these Dan the pen test.
+
+147
+00:12:10,000 --> 00:12:15,000
+No, she can just buzz past.
+
+148
+00:12:15,000 --> 00:12:20,000
+Pentest Residential. DIRECTOR HERSEY- No I'll get those updated after.
+
+149
+00:12:20,000 --> 00:12:25,000
+Rob does this thing. Okay.
+
+150
+00:12:25,000 --> 00:12:30,000
+international ones are in here too so yeah i'll get those updated according
+
+151
+00:12:30,000 --> 00:12:35,000
+and probably get them moved into either in Pratt or to UH.
+
+152
+00:12:35,000 --> 00:12:40,000
+once we get them deployed to stage.
+
+153
+00:12:40,000 --> 00:12:45,000
+Okay. Anything on the e-store? Well...
+
+154
+00:12:45,000 --> 00:12:50,000
+Yeah, just leave it where it's at. I'm using that ticket to document the...
+
+155
+00:12:50,000 --> 00:12:55,000
+process for basically for customers and discounts
+
+156
+00:12:55,000 --> 00:13:00,000
+since that was an issue. Anyway, it's fine.
+
+157
+00:13:00,000 --> 00:13:05,000
+Aaron, IT Wiki. I've not.
+
+158
+00:13:05,000 --> 00:13:10,000
+started on it okay catalog domains Dan
+
+159
+00:13:10,000 --> 00:13:15,000
+Yes, I got those all.
+
+160
+00:13:15,000 --> 00:13:20,000
+cataloged. I need to do a little cleanup on that.
+
+161
+00:13:20,000 --> 00:13:25,000
+So why, I wonder why this is, what status is this in?
+
+162
+00:13:25,000 --> 00:13:30,000
+You probably have it in the wrong. Yep.
+
+163
+00:13:30,000 --> 00:13:35,000
+So. Okay.
+
+164
+00:13:35,000 --> 00:13:40,000
+General software custom. Okay, I need to remember to do that because I created this just yet.
+
+165
+00:13:40,000 --> 00:13:45,000
+Is this marketing, technically? No, this is completely...
+
+166
+00:13:45,000 --> 00:13:50,000
+IT related. So I would put it under IT. Yeah. Business solutions.
+
+167
+00:13:50,000 --> 00:13:55,000
+Yeah. Oops. Okay. Yeah.
+
+168
+00:13:55,000 --> 00:14:00,000
+the request templates too recently.
+
+169
+00:14:00,000 --> 00:14:05,000
+It has some information in it. Okay.
+
+170
+00:14:05,000 --> 00:14:10,000
+Megan mobile menu and main menu do not match.
+
+171
+00:14:10,000 --> 00:14:15,000
+Yeah, I fixed that. I'll close it. Okay.
+
+172
+00:14:15,000 --> 00:14:20,000
+And then our last one, Dan, B2B Migration Project.
+
+173
+00:14:20,000 --> 00:14:25,000
+yeah this is um just getting started
+
+174
+00:14:25,000 --> 00:14:30,000
+so I think Megan might have put this in there just uh as I did uh
+
+175
+00:14:30,000 --> 00:14:35,000
+placeholder for our integration so um
+
+176
+00:14:35,000 --> 00:14:40,000
+Aaron, you know, we'll talk more about this in the new year, but we probably.
+
+177
+00:14:40,000 --> 00:14:45,000
+we get together and start kind of mapping this out a little bit.
+
+178
+00:14:45,000 --> 00:14:50,000
+Now that we've made the decision to go with two stores.
+
+179
+00:14:50,000 --> 00:14:55,000
+This integration will get a little bit more. It's not that big of a deal, but a little.
+
+180
+00:14:55,000 --> 00:15:00,000
+hey, got to check for two flags, and then you'll know your destination based on the.
+
+181
+00:15:00,000 --> 00:15:05,000
+value of the flags that are in parts of the inquiry
+
+182
+00:15:05,000 --> 00:15:10,000
+I guess that's the other thing, Megan. We probably.
+
+183
+00:15:10,000 --> 00:15:15,000
+need to either resurrect or create a new ticket that says we need another feature
+
+184
+00:15:15,000 --> 00:15:20,000
+flag or that future flag another flag in parts of quarry to indicate whether
+
+185
+00:15:20,000 --> 00:15:25,000
+the part as a B to C. And so that's just one more checkbox.
+
+186
+00:15:25,000 --> 00:15:30,000
+the field so it'll be a database update and then add that check box and then based on the
+
+187
+00:15:30,000 --> 00:15:35,000
+value of those check boxes will integrate. And then there's some research.
+
+188
+00:15:35,000 --> 00:15:40,000
+should do and the api and things like that so this will probably get a little momentum starting
+
+189
+00:15:40,000 --> 00:15:45,000
+next year but for right now Aaron you've got so many other big priorities I just stay focused.
+
+190
+00:15:45,000 --> 00:15:50,000
+on them. Yeah, I'll schedule something for when we come back.
+
+191
+00:15:50,000 --> 00:15:55,000
+But I was thinking, Dan, I don't even know if you want to add the B to C flag.
+
+192
+00:15:55,000 --> 00:16:00,000
+because pricing is not correct in parts inquiry.
+
+193
+00:16:00,000 --> 00:16:05,000
+We can talk about that more, but. Yay. Yeah.
+
+194
+00:16:05,000 --> 00:16:10,000
+Because we wouldn't want to auto-upload the new part and then have the pricing be wrong.
+
+195
+00:16:10,000 --> 00:16:15,000
+be like uploading to draft status and then i could go in and
+
+196
+00:16:15,000 --> 00:16:20,000
+change it i don't know anyways i gotcha yeah let's i woke up at three
+
+197
+00:16:20,000 --> 00:16:25,000
+last night and all these sloshes came in my head and I wrote them down on my phone.
+
+198
+00:16:25,000 --> 00:16:30,000
+You're like a comedian who wakes up in the middle of the night and has the best jokes.
+
+199
+00:16:30,000 --> 00:16:35,000
+yeah great all right we're good but yeah i'll schedule something
+
+200
+00:16:35,000 --> 00:16:40,000
+for all of us to get back. Who should be involved in that? I don't want to waste.
+
+201
+00:16:40,000 --> 00:16:45,000
+David Alton's time, but do we need him in that discussion?
+
+202
+00:16:45,000 --> 00:16:50,000
+Let's just do it there. And Aaron, you're comfortable, right? And then we'll report back to David. You know, keep in mind.
+
+203
+00:16:50,000 --> 00:16:55,000
+update on it. That way calendars will be easier to find time on.
+
+204
+00:16:55,000 --> 00:17:00,000
+are you okay with that talking about the api and stuff you're you're gonna be the
+
+205
+00:17:00,000 --> 00:17:05,000
+SME I think for that so we'll just keep David in the loop
+
+206
+00:17:05,000 --> 00:17:10,000
+loop on our decision. I think everybody, and he is an uncomfortable elite.
+
+207
+00:17:10,000 --> 00:17:15,000
+moving towards the SSIS route and building it.
+
+208
+00:17:15,000 --> 00:17:20,000
+So, and then also just an FYI, Megan, another conversation.
+
+209
+00:17:20,000 --> 00:17:25,000
+we had. So for new integrations, we're talking about.
+
+210
+00:17:25,000 --> 00:17:30,000
+and SSIS and David's comfortable with that, I think. And then the order.
+
+211
+00:17:30,000 --> 00:17:35,000
+stuff. I think we're going to stick with Jitterbit for now, since it's up and working.
+
+212
+00:17:35,000 --> 00:17:40,000
+There's no sense in building that at this point.
+
+213
+00:17:40,000 --> 00:17:45,000
+If we decide to move off of Jitterbent in the future, then maybe something else. But with everything that.
+
+214
+00:17:45,000 --> 00:17:50,000
+David Strickland has done so far to make that thing work. I'd hate to.
+
+215
+00:17:50,000 --> 00:17:55,000
+abandon it. But there's some...
+
+216
+00:17:55,000 --> 00:18:00,000
+Fun stuff for Aaron lies ahead as far as building up integration to.
+
+217
+00:18:00,000 --> 00:18:05,000
+get customers and parts over so totally fine
+
+218
+00:18:05,000 --> 00:18:10,000
+Yippee. Alrighty.
+
+219
+00:18:10,000 --> 00:18:15,000
+Cool cats. I'll see you in a bit. Thank you. Bye. See y'all later. Bye.
+
+220
+00:18:15,000 --> 00:18:18,026
+Thank you.

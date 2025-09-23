@@ -176,6 +176,12 @@ Options:
   -d, --device ID      Audio input device ID (overrides config)
   -m, --model SIZE     Whisper model size (tiny|base|small|medium|large)
   --language LANG      Language code (en, es, fr, etc.) or auto
+  
+  # File transcription options
+  -i, --input FILE     Input audio/video file to transcribe
+  -o, --output FILE    Output file for transcript (.txt) or subtitles (.srt)
+  -t, --timestamps     Include timestamps in output
+  -q, --quiet          Quiet mode (minimal output)
 ```
 
 ## 🔧 Advanced Configuration
@@ -310,6 +316,145 @@ vad:
 python whisper-transcriber.py --device 1  # Replace with your mic device ID
 ```
 
+## 📚 Common Usage Examples
+
+### whisper-transcriber.py Examples
+
+#### Live Transcription
+```powershell
+# Basic real-time transcription (uses config.yaml settings)
+python whisper-transcriber.py
+
+# Real-time with VB-Audio Virtual Cable (for capturing app audio)
+python whisper-transcriber.py --device 31
+
+# Real-time with microphone
+python whisper-transcriber.py --device 1  # Use your mic device ID
+
+# High accuracy real-time (slower but better results)
+python whisper-transcriber.py --model small --device 31
+```
+
+#### File Transcription
+```powershell
+# Transcribe a single video file
+python whisper-transcriber.py -i "video.mp4" -o "transcript.txt"
+
+# Transcribe with timestamps
+python whisper-transcriber.py -i "lecture.mp4" -o "lecture.txt" --timestamps
+
+# Use better model for accuracy
+python whisper-transcriber.py -i "interview.wav" -o "interview.txt" -m medium
+
+# Generate SRT subtitle file (auto-detects .srt extension)
+python whisper-transcriber.py -i "movie.mp4" -o "movie.srt"
+
+# Force specific language
+python whisper-transcriber.py -i "spanish.mp3" -o "spanish.txt" --language es
+```
+
+#### Quiet Mode (for scripting)
+```powershell
+# Minimal output for batch processing
+python whisper-transcriber.py -i "audio.wav" -o "output.txt" -q
+
+# Quiet mode with timestamps
+python whisper-transcriber.py -i "video.mp4" -o "video.txt" -q -t
+```
+
+### batch-transcribe.ps1 Examples
+
+#### Basic Batch Processing
+```powershell
+# Transcribe all video/audio files in current directory
+.\batch-transcribe.ps1
+
+# Include timestamps in all transcripts
+.\batch-transcribe.ps1 -Timestamps
+
+# Generate SRT subtitle files instead of text files
+.\batch-transcribe.ps1 -Subtitle
+
+# Use better model for higher accuracy
+.\batch-transcribe.ps1 -Model medium -Timestamps
+```
+
+#### Advanced Batch Operations
+```powershell
+# Custom output directory
+.\batch-transcribe.ps1 -OutputDir "transcripts" -Timestamps
+
+# Generate subtitles with large model
+.\batch-transcribe.ps1 -Subtitle -Model large -OutputDir "subtitles"
+
+# Force overwrite existing files
+.\batch-transcribe.ps1 -Force -Model small -Timestamps
+
+# CPU-only processing (if GPU causes crashes)
+.\batch-transcribe.ps1 -CpuOnly -Model medium
+```
+
+#### Production Workflows
+```powershell
+# High-quality subtitle generation for video production
+.\batch-transcribe.ps1 -Subtitle -Model large -OutputDir "final_subs" -Force
+
+# Fast batch processing for content review
+.\batch-transcribe.ps1 -Model base -OutputDir "drafts"
+
+# Mixed content with timestamps for meeting recordings
+.\batch-transcribe.ps1 -Timestamps -Model medium -OutputDir "meeting_transcripts"
+```
+
+#### Running from Different Locations
+```powershell
+# Copy batch script to your media folder
+copy "C:\path\to\whisper-transcriber\batch-transcribe.ps1" .
+.\batch-transcribe.ps1 -Subtitle -Model medium
+
+# Set environment variable for global access
+$env:WHISPER_TRANSCRIBER_PATH = "C:\Users\rmacmorran\projects\whisper-transcriber\whisper-transcriber.py"
+C:\MyVideos\batch-transcribe.ps1 -Timestamps
+
+# Direct execution with full path
+C:\Users\rmacmorran\projects\whisper-transcriber\batch-transcribe.ps1 -Subtitle
+```
+
+### Model Selection Guide
+
+| Use Case | Recommended Model | Example Command |
+|----------|-------------------|------------------|
+| **Real-time transcription** | `base` | `python whisper-transcriber.py --model base` |
+| **Quick file processing** | `base` or `small` | `python whisper-transcriber.py -i video.mp4 -o output.txt -m base` |
+| **High-accuracy transcription** | `medium` or `large` | `.\batch-transcribe.ps1 -Model large -Timestamps` |
+| **Subtitle generation** | `medium` (best balance) | `.\batch-transcribe.ps1 -Subtitle -Model medium` |
+| **Professional subtitles** | `large` | `python whisper-transcriber.py -i movie.mp4 -o movie.srt -m large` |
+| **Low-resource systems** | `tiny` | `python whisper-transcriber.py -i audio.wav -o text.txt -m tiny` |
+
+### Output Format Examples
+
+#### Text Output (.txt)
+```
+[00:00:15] Welcome to today's presentation about artificial intelligence.
+[00:00:20] We'll be covering machine learning fundamentals and practical applications.
+[00:00:28] Let's start with the basic concepts that everyone should understand.
+```
+
+#### SRT Subtitle Output (.srt)
+```
+1
+00:00:00,000 --> 00:00:05,000
+Welcome to today's presentation about artificial intelligence.
+
+2
+00:00:05,000 --> 00:00:10,000
+We'll be covering machine learning fundamentals and practical applications.
+
+3
+00:00:10,000 --> 00:00:15,000
+Let's start with the basic concepts that everyone should understand.
+```
+
 ## 🔄 Batch Processing with PowerShell Script
 
 Included with the project is `batch-transcribe.ps1`, a powerful PowerShell script that can transcribe multiple video/audio files in bulk.
@@ -365,7 +510,9 @@ Options:
   -OutputDir <path>   Output directory (default: current directory)
   -Timestamps         Include timestamps in output
   -Model <size>       Whisper model (tiny/base/small/medium/large)
+  -Subtitle           Generate subtitle files (.srt) instead of text files (.txt)
   -Force              Overwrite existing transcripts
+  -CpuOnly            Force CPU-only processing (avoids GPU-related crashes)
   -Help               Show help message
 ```
 

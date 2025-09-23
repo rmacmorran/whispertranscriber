@@ -8,6 +8,7 @@ param(
     [switch]$Force,
     [switch]$ContinueOnError,
     [switch]$CpuOnly,
+    [switch]$Subtitle,
     [switch]$Help
 )
 
@@ -26,6 +27,7 @@ OPTIONS:
     -Force              Overwrite existing transcript files
     -ContinueOnError    Continue processing other files if one fails
     -CpuOnly            Force CPU-only processing (avoids GPU-related crashes)
+    -Subtitle           Generate subtitle files (.srt) instead of text files (.txt)
     -Help               Show this help message
 
 EXAMPLES:
@@ -34,6 +36,8 @@ EXAMPLES:
     .\batch-transcribe.ps1 -OutputDir "my_transcripts"       # Custom output folder
     .\batch-transcribe.ps1 -Model small -Timestamps -Force   # Advanced options
     .\batch-transcribe.ps1 -CpuOnly                          # Force CPU processing (if GPU crashes)
+    .\batch-transcribe.ps1 -Subtitle                         # Generate SRT subtitle files
+    .\batch-transcribe.ps1 -Subtitle -Model medium           # Generate subtitles with better model
 
 SUPPORTED FORMATS:
     Video: .mp4, .avi, .mkv, .mov, .wmv, .flv, .webm, .m4v
@@ -262,6 +266,7 @@ $startTime = Get-Date
 Write-ColorOutput "Starting batch transcription..." 'Progress'
 Write-ColorOutput "Model: $Model" 'Info'
 Write-ColorOutput "Timestamps: $(if ($Timestamps) { 'Yes' } else { 'No' })" 'Info'
+Write-ColorOutput "Format: $(if ($Subtitle) { 'SRT Subtitles' } else { 'Text Transcripts' })" 'Info'
 Write-ColorOutput "Output: $(if ($OutputDir -eq '.') { 'current directory' } else { "$OutputDir\" })" 'Info'
 Write-Host ""
 
@@ -271,7 +276,8 @@ for ($i = 0; $i -lt $allFiles.Count; $i++) {
     
     # Generate output filename
     $baseName = [System.IO.Path]::GetFileNameWithoutExtension($file.Name)
-    $outputFile = Join-Path $OutputDir "$baseName.txt"
+    $outputExtension = if ($Subtitle) { ".srt" } else { ".txt" }
+    $outputFile = Join-Path $OutputDir "$baseName$outputExtension"
     
     Write-ColorOutput "[$($i + 1)/$($allFiles.Count)] ($progress%) Processing: $($file.Name)" 'Progress'
     

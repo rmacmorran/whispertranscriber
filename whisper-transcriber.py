@@ -575,7 +575,52 @@ class TranscriberApp:
         finally:
             self.shutdown()
     
-    def transcribe_file(self, input_file: str, include_timestamps: bool = False) -> str:
+    def format_srt_timestamp(self, seconds: float) -> str:
+        """
+        Format seconds into SRT timestamp format (HH:MM:SS,mmm)
+        
+        Args:
+            seconds: Time in seconds (float)
+            
+        Returns:
+            Formatted timestamp string
+        """
+        hours = int(seconds // 3600)
+        minutes = int((seconds % 3600) // 60)
+        secs = int(seconds % 60)
+        milliseconds = int((seconds % 1) * 1000)
+        
+        return f"{hours:02d}:{minutes:02d}:{secs:02d},{milliseconds:03d}"
+    
+    def format_as_srt(self, transcript_parts: list, chunk_durations: list) -> str:
+        """
+        Format transcript parts as SRT subtitle file
+        
+        Args:
+            transcript_parts: List of transcript text chunks
+            chunk_durations: List of (start_time, end_time) tuples for each chunk
+            
+        Returns:
+            SRT formatted string
+        """
+        srt_content = []
+        subtitle_index = 1
+        
+        for i, (text, (start_time, end_time)) in enumerate(zip(transcript_parts, chunk_durations)):
+            if text.strip():  # Only include non-empty text
+                start_timestamp = self.format_srt_timestamp(start_time)
+                end_timestamp = self.format_srt_timestamp(end_time)
+                
+                srt_content.append(f"{subtitle_index}")
+                srt_content.append(f"{start_timestamp} --> {end_timestamp}")
+                srt_content.append(text.strip())
+                srt_content.append("")  # Empty line between subtitles
+                
+                subtitle_index += 1
+        
+        return "\n".join(srt_content)
+    
+    def transcribe_file(self, input_file: str, include_timestamps: bool = False, output_file: str = None) -> str:
         """
         Transcribe an audio or video file and return the full transcript
         
@@ -711,17 +756,27 @@ class TranscriberApp:
             # Start Whisper engine
             self.whisper_engine.start()
             
-            # Process file in chunks to handle large files
-            chunk_duration = 30.0  # Process 30-second chunks
+            # Detect SRT output format from output_file extension
+            is_srt_output = output_file and output_file.lower().endswith('.srt')
+            
+            # Use different chunk duration based on output format
+            if is_srt_output:
+                chunk_duration = 5.0  # Use 5-second chunks for SRT subtitles
+            else:
+                chunk_duration = 30.0  # Use 30-second chunks for regular transcription
+            
             chunk_samples = int(chunk_duration * sr)
             total_chunks = int(np.ceil(len(audio) / chunk_samples))
             
             if not self.suppress_gui:
-                console.print(f"[yellow]Processing {total_chunks} chunks...[/yellow]")
+                format_msg = "SRT chunks" if is_srt_output else "chunks"
+                console.print(f"[yellow]Processing {total_chunks} {format_msg} ({chunk_duration}s each)...[/yellow]")
             else:
-                print(f"Processing {total_chunks} chunks...")
+                format_msg = "SRT chunks" if is_srt_output else "chunks"
+                print(f"Processing {total_chunks} {format_msg} ({chunk_duration}s each)...")
             
             transcript_parts = []
+            chunk_durations = []  # Store timing for SRT format
             
             for i in range(total_chunks):
                 start_idx = i * chunk_samples
@@ -753,8 +808,12 @@ class TranscriberApp:
                         result = self.whisper_engine.get_result(timeout=1.0)
                     
                     if result and result.text.strip():
-                        # Format with or without timestamps based on parameter
-                        if include_timestamps:
+                        # Store timing data for SRT format
+                        if is_srt_output:
+                            chunk_durations.append((chunk.start_time, chunk.end_time))
+                        
+                        # Format with or without timestamps based on parameter (non-SRT)
+                        if include_timestamps and not is_srt_output:
                             # Format timestamp from chunk start time
                             start_seconds = int(chunk.start_time)
                             start_minutes = start_seconds // 60
@@ -787,8 +846,11 @@ class TranscriberApp:
             # Stop Whisper engine
             self.whisper_engine.stop()
             
-            # Combine all transcript parts
-            if include_timestamps:
+            # Format output based on file type or parameters
+            if is_srt_output:
+                # Generate SRT format
+                full_transcript = self.format_as_srt(transcript_parts, chunk_durations)
+            elif include_timestamps:
                 # For timestamps, join with single newlines (each chunk is already formatted as one line)
                 full_transcript = '\n'.join(transcript_parts)
             else:
@@ -796,9 +858,11 @@ class TranscriberApp:
                 full_transcript = ' '.join(transcript_parts)
             
             if not self.suppress_gui:
-                console.print(f"[green]✅ File transcription completed![/green]")
+                format_msg = "SRT subtitle file" if is_srt_output else "file transcription"
+                console.print(f"[green]✅ {format_msg} completed![/green]")
             else:
-                print("File transcription completed!")
+                format_msg = "SRT subtitle file" if is_srt_output else "File transcription"
+                print(f"{format_msg} completed!")
             
             return full_transcript
             
@@ -874,6 +938,8 @@ Examples:
   python main.py -i audio.m4a -m small --language en # Use small model with English language
   python main.py -i video.mp4 -t -o transcript.txt # Include timestamps in output
   python main.py -i video.mp4 -tq             # Transcribe with timestamps, console mode
+  python main.py -i video.mp4 -o subtitles.srt # Generate SRT subtitle file
+  python main.py -i audio.wav -o movie.srt -q  # Generate SRT in console mode
         """
     )
     
@@ -940,7 +1006,7 @@ Examples:
         if args.input_file:
             # File transcription mode
             try:
-                transcript = app.transcribe_file(args.input_file, include_timestamps=args.timestamps)
+                transcript = app.transcribe_file(args.input_file, include_timestamps=args.timestamps, output_file=args.output)
                 
                 # Output the transcript
                 if args.output:
