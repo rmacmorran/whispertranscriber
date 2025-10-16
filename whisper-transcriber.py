@@ -620,7 +620,86 @@ class TranscriberApp:
         
         return "\n".join(srt_content)
     
-    def transcribe_file(self, input_file: str, include_timestamps: bool = False, output_file: str = None) -> str:
+    def translate_text(self, text: str, target_language: str = 'en') -> tuple[str, str]:
+        """
+        Translate text using Google Translate
+        
+        Args:
+            text: Text to translate
+            target_language: Target language code (e.g., 'en', 'es', 'fr')
+            
+        Returns:
+            Tuple of (translated_text, detected_source_language)
+        """
+        try:
+            # Import googletrans here to avoid dependency issues if not needed
+            from googletrans import Translator
+            
+            translator = Translator()
+            result = translator.translate(text, dest=target_language)
+            return result.text, result.src
+        except Exception as e:
+            logger = logging.getLogger(__name__)
+            logger.warning(f"Translation failed: {e}")
+            # Return original text if translation fails
+            return text, 'unknown'
+    
+    def generate_translated_filename(self, original_filename: str, target_language: str) -> str:
+        """
+        Generate a filename for the translated output file
+        
+        Args:
+            original_filename: Original output filename
+            target_language: Target language code
+            
+        Returns:
+            Filename with language suffix before extension
+        """
+        path = Path(original_filename)
+        # Insert language before extension: meeting1.txt -> meeting1.english.txt
+        new_name = path.stem + f".{target_language}" + path.suffix
+        return str(path.parent / new_name)
+    
+    def translate_transcript_parts(self, transcript_parts: list, target_language: str) -> tuple[list, str]:
+        """
+        Translate a list of transcript parts
+        
+        Args:
+            transcript_parts: List of transcript text chunks
+            target_language: Target language code
+            
+        Returns:
+            Tuple of (translated_parts, detected_source_language)
+        """
+        translated_parts = []
+        detected_language = 'unknown'
+        
+        if not self.suppress_gui:
+            console.print(f"[yellow]Translating {len(transcript_parts)} chunks to {target_language.upper()}...[/yellow]")
+        else:
+            print(f"Translating {len(transcript_parts)} chunks to {target_language.upper()}...")
+        
+        for i, part in enumerate(transcript_parts):
+            if part.strip():
+                translated_text, detected_lang = self.translate_text(part, target_language)
+                translated_parts.append(translated_text)
+                
+                # Use the first detected language as the overall source language
+                if detected_language == 'unknown' and detected_lang != 'unknown':
+                    detected_language = detected_lang
+                
+                # Show progress every 10 chunks or for the last chunk
+                if (i + 1) % 10 == 0 or i == len(transcript_parts) - 1:
+                    if not self.suppress_gui:
+                        console.print(f"[cyan]Translated {i + 1}/{len(transcript_parts)} chunks[/cyan]")
+                    else:
+                        print(f"Translated {i + 1}/{len(transcript_parts)} chunks")
+            else:
+                translated_parts.append(part)  # Keep empty parts as-is
+        
+        return translated_parts, detected_language
+    
+    def transcribe_file(self, input_file: str, include_timestamps: bool = False, output_file: str = None, translate_to: str = None) -> str:
         """
         Transcribe an audio or video file and return the full transcript
         
@@ -828,20 +907,14 @@ class TranscriberApp:
                         
                         transcript_parts.append(formatted_text)
                         
-                        # Show progress
+                        # Show progress with word count instead of truncated text
+                        word_count = len(result.text.strip().split())
                         if not self.suppress_gui:
-                            progress_msg = f"Chunk {i+1}/{total_chunks}: {result.text.strip()[:50]}..."
+                            progress_msg = f"Chunk {i+1}/{total_chunks}: {word_count} words transcribed"
                             console.print(f"[cyan]{progress_msg}[/cyan]")
                         else:
-                            # For suppress_gui mode, encode transcript text safely for console output
-                            try:
-                                transcript_preview = result.text.strip()[:50]
-                                progress_msg = f"Chunk {i+1}/{total_chunks}: {transcript_preview}..."
-                                print(progress_msg)
-                            except UnicodeEncodeError:
-                                # If transcript contains chars that can't be encoded, show without preview
-                                progress_msg = f"Chunk {i+1}/{total_chunks}: [text contains special characters]..."
-                                print(progress_msg)
+                            progress_msg = f"Chunk {i+1}/{total_chunks}: {word_count} words transcribed"
+                            print(progress_msg)
             
             # Stop Whisper engine
             self.whisper_engine.stop()
@@ -857,12 +930,59 @@ class TranscriberApp:
                 # For no timestamps, join with single space as before
                 full_transcript = ' '.join(transcript_parts)
             
+            # Handle translation if requested
+            translated_transcript = None
+            detected_language = 'unknown'
+            
+            if translate_to and output_file:
+                # Translate transcript parts
+                translated_parts, detected_language = self.translate_transcript_parts(transcript_parts, translate_to)
+                
+                # Format translated output in same format as original
+                if is_srt_output:
+                    translated_transcript = self.format_as_srt(translated_parts, chunk_durations)
+                elif include_timestamps:
+                    translated_transcript = '\n'.join(translated_parts)
+                else:
+                    translated_transcript = ' '.join(translated_parts)
+                
+                # Generate translated filename
+                translated_filename = self.generate_translated_filename(output_file, translate_to)
+                
+                # Write translated file
+                try:
+                    translated_path = Path(translated_filename)
+                    translated_path.parent.mkdir(parents=True, exist_ok=True)
+                    
+                    with open(translated_filename, 'w', encoding='utf-8') as f:
+                        f.write(translated_transcript)
+                    
+                    if not self.suppress_gui:
+                        console.print(f"[green]✅ Translated {translate_to.upper()} file saved to: {translated_filename}[/green]")
+                    else:
+                        print(f"Translated {translate_to.upper()} file saved to: {translated_filename}")
+                        
+                except Exception as e:
+                    logger.error(f"Failed to write translated file: {e}")
+                    if not self.suppress_gui:
+                        console.print(f"[red]❌ Failed to save translated file: {e}[/red]")
+                    else:
+                        print(f"Failed to save translated file: {e}")
+            
             if not self.suppress_gui:
                 format_msg = "SRT subtitle file" if is_srt_output else "file transcription"
-                console.print(f"[green]✅ {format_msg} completed![/green]")
+                if translate_to:
+                    source_lang = detected_language.upper() if detected_language != 'unknown' else 'Original'
+                    console.print(f"[green]✅ {format_msg} completed! ({source_lang} → {translate_to.upper()})[/green]")
+                else:
+                    console.print(f"[green]✅ {format_msg} completed![/green]")
             else:
                 format_msg = "SRT subtitle file" if is_srt_output else "File transcription"
-                print(f"{format_msg} completed!")
+                if translate_to:
+                    source_lang = detected_language.upper() if detected_language != 'unknown' else 'Original'
+                    print(f"{format_msg} completed! ({source_lang} → {translate_to.upper()})")
+                else:
+                    print(f"{format_msg} completed!")
             
             return full_transcript
             
@@ -932,14 +1052,19 @@ Examples:
   python whisper-transcriber.py -d 31 -o output.txt -q       # Console mode with device and output file
   
   # File transcription mode
-  python whisper-transcriber.py -i audio.mp3                 # Transcribe audio file to console
-  python whisper-transcriber.py -i video.mp4 -o transcript.txt # Transcribe video file to text file
+  python whisper-transcriber.py -i audio.mp3                 # Transcribe audio file (saves to audio.txt)
+  python whisper-transcriber.py -i video.mp4 -o transcript.txt # Transcribe video file to specific output file
   python whisper-transcriber.py -i recording.wav -q          # Transcribe in console mode
   python whisper-transcriber.py -i audio.m4a -m small --language en # Use small model with English language
   python whisper-transcriber.py -i video.mp4 -t -o transcript.txt # Include timestamps in output
   python whisper-transcriber.py -i video.mp4 -tq             # Transcribe with timestamps, console mode
   python whisper-transcriber.py -i video.mp4 -o subtitles.srt # Generate SRT subtitle file
   python whisper-transcriber.py -i audio.wav -o movie.srt -q  # Generate SRT in console mode
+  
+  # File transcription with translation
+  python whisper-transcriber.py -i audio.mp3 -o transcript.txt --translate en # Transcribe and translate to English
+  python whisper-transcriber.py -i video.mp4 -o output.txt --translate es -q  # Translate to Spanish, console mode
+  python whisper-transcriber.py -i recording.wav -o subs.srt --translate fr   # Generate translated SRT subtitles
         """
     )
     
@@ -963,7 +1088,7 @@ Examples:
                        help='Language code (e.g., en, es, fr) or auto for detection')
     
     parser.add_argument('--output', '-o',
-                       help='Output file path for saving transcriptions')
+                       help='Output file path for saving transcriptions (defaults to input filename with .txt extension for file mode)')
     
     parser.add_argument('--no-gui', '--suppress-gui', '-q',
                        action='store_true',
@@ -976,6 +1101,10 @@ Examples:
     parser.add_argument('--timestamps', '-t',
                        action='store_true',
                        help='Include timestamps in file transcription output')
+    
+    parser.add_argument('--translate',
+                       type=str,
+                       help='Translate transcription to target language (e.g., en, es, fr). Creates additional output file with language suffix.')
     
     args = parser.parse_args()
     
@@ -1005,25 +1134,36 @@ Examples:
         # Check if we're in file transcription mode
         if args.input_file:
             # File transcription mode
+            
+            # If no output file specified, create default with .txt extension
+            output_file = args.output
+            if not output_file:
+                input_path = Path(args.input_file)
+                output_file = str(input_path.with_suffix('.txt'))
+                if args.no_gui:
+                    print(f"No output file specified, using: {output_file}")
+                else:
+                    console.print(f"[yellow]No output file specified, using: {output_file}[/yellow]")
+            
             try:
-                transcript = app.transcribe_file(args.input_file, include_timestamps=args.timestamps, output_file=args.output)
+                transcript = app.transcribe_file(args.input_file, include_timestamps=args.timestamps, output_file=output_file, translate_to=args.translate)
                 
                 # Output the transcript
-                if args.output:
+                if output_file:
                     # Write to output file
-                    output_path = Path(args.output)
+                    output_path = Path(output_file)
                     output_path.parent.mkdir(parents=True, exist_ok=True)
                     
-                    with open(args.output, 'w', encoding='utf-8') as f:
+                    with open(output_file, 'w', encoding='utf-8') as f:
                         f.write(transcript)
                     
                     if args.no_gui:
-                        print(f"\nTranscript saved to: {args.output}")
+                        print(f"\nTranscript saved to: {output_file}")
                     else:
                         try:
-                            console.print(f"\n[green]✅ Transcript saved to: {args.output}[/green]")
+                            console.print(f"\n[green]✅ Transcript saved to: {output_file}[/green]")
                         except UnicodeEncodeError:
-                            print(f"\nTranscript saved to: {args.output}")
+                            print(f"\nTranscript saved to: {output_file}")
                 else:
                     # Output to console
                     if args.no_gui:
